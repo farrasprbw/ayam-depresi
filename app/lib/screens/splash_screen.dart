@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
-import '../widgets/grain_overlay.dart';
 import 'login_screen.dart';
 
 /// Splash Screen — The "Bridging Screen"
@@ -86,11 +85,6 @@ class _SplashScreenState extends State<SplashScreen>
               backgroundColor: AppColors.primary, // Black background
               body: Stack(
                 children: [
-                  // Gritty texture
-                  const Positioned.fill(
-                    child: GrainOverlay(opacity: 0.1),
-                  ),
-
                   // Decorative Elements
                   _buildDecorations(),
 
@@ -157,17 +151,19 @@ class _SplashScreenState extends State<SplashScreen>
             // Logo Image
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: ColorFiltered(
-                colorFilter: const ColorFilter.matrix(<double>[
-                  1.25, 0, 0, 0, 0, // Contrast and saturation tweak (simplified)
-                  0, 0.5, 0, 0, 0,
-                  0, 0, 0.5, 0, 0,
-                  0, 0, 0, 1, 0,
-                ]),
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  fit: BoxFit.cover,
-                  colorBlendMode: BlendMode.multiply,
+              child: RepaintBoundary(
+                child: ColorFiltered(
+                  colorFilter: const ColorFilter.matrix(<double>[
+                    1.25, 0, 0, 0, 0,
+                    0, 0.5, 0, 0, 0,
+                    0, 0, 0.5, 0, 0,
+                    0, 0, 0, 1, 0,
+                  ]),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.cover,
+                    colorBlendMode: BlendMode.multiply,
+                  ),
                 ),
               ),
             ),
@@ -288,12 +284,9 @@ class _SplashScreenState extends State<SplashScreen>
           left: 40,
           child: Transform.rotate(
             angle: -12 * pi / 180,
-            child: Opacity(
-              opacity: 0.2,
-              child: Text(
-                '#PEDAS',
-                style: AppTypography.display.copyWith(color: AppColors.error),
-              ),
+            child: Text(
+              '#PEDAS',
+              style: AppTypography.display.copyWith(color: AppColors.error.withValues(alpha: 0.2)),
             ),
           ),
         ),
@@ -303,13 +296,10 @@ class _SplashScreenState extends State<SplashScreen>
           right: 40,
           child: Transform.rotate(
             angle: 12 * pi / 180,
-            child: Opacity(
-              opacity: 0.1,
-              child: Text(
-                'MATI',
-                style: AppTypography.display.copyWith(
-                  color: AppColors.surfaceContainerLowest,
-                ),
+            child: Text(
+              'MATI',
+              style: AppTypography.display.copyWith(
+                color: AppColors.surfaceContainerLowest.withValues(alpha: 0.1),
               ),
             ),
           ),
@@ -331,17 +321,14 @@ class _SplashScreenState extends State<SplashScreen>
         Positioned(
           bottom: MediaQuery.of(context).size.height * 0.25,
           left: 20,
-          child: Opacity(
-            opacity: 0.2,
-            child: Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.surfaceContainerLowest,
-                  width: 4,
-                ),
+          child: Container(
+            width: 96,
+            height: 96,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.surfaceContainerLowest.withValues(alpha: 0.2),
+                width: 4,
               ),
             ),
           ),

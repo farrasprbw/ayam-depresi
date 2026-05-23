@@ -6,7 +6,6 @@ import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
 import '../widgets/brutal_cached_image.dart';
-import '../widgets/grain_overlay.dart';
 import 'menu_detail_screen.dart';
 import 'order_status_screen.dart';
 
@@ -26,31 +25,24 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.background,
       // Custom App Bar built into the body for brutalist styling control
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            const Positioned.fill(
-              child: GrainOverlay(opacity: 0.05),
-            ),
-            Column(
-              children: [
-                _buildTopAppBar(),
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppThemeConstants.marginMobile,
-                      vertical: 24,
-                    ),
-                    children: [
-                      _buildFlashSale(),
-                      const SizedBox(height: 32),
-                      _buildCategories(),
-                      const SizedBox(height: 32),
-                      _buildFeaturedMenu(),
-                      const SizedBox(height: 96), // Spacer for FAB
-                    ],
-                  ),
+            _buildTopAppBar(),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppThemeConstants.marginMobile,
+                  vertical: 24,
                 ),
-              ],
+                children: [
+                  _buildFlashSale(),
+                  const SizedBox(height: 32),
+                  _buildCategories(),
+                  const SizedBox(height: 32),
+                  _buildFeaturedMenu(),
+                  const SizedBox(height: 96),
+                ],
+              ),
             ),
           ],
         ),
@@ -390,16 +382,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    ColorFiltered(
-                      colorFilter: const ColorFilter.mode(
-                        Colors.grey,
-                        BlendMode.saturation,
-                      ),
-                      child: BrutalCachedImage(
-                        imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCw4FW_xrUcUy_RbcmbJFnxJbmteucBxnIDCrtQG5MldX_g89FjqXdufRhi1LjBIxfcQIKu72E12RYfM-pLMMJOY8lKFuK2mpBs6_oY-7OSe2GhSd1-Nu_EnrugVXjiR0AQW3d5wXujgGhuL_647gpdidVU6jl0g2EHU_kmXnquGwr73L_Za7xwFedfJOagGJO11gEur2z3czzFfuwTlV3jlbXK7hav_r6NYF6fWCo033vIh35NSx9rjxWhE1CGLPbkt80uelHrOKM',
-                        fit: BoxFit.cover,
-                        memCacheWidth: 600,
-                      ),
+                    BrutalCachedImage(
+                      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCw4FW_xrUcUy_RbcmbJFnxJbmteucBxnIDCrtQG5MldX_g89FjqXdufRhi1LjBIxfcQIKu72E12RYfM-pLMMJOY8lKFuK2mpBs6_oY-7OSe2GhSd1-Nu_EnrugVXjiR0AQW3d5wXujgGhuL_647gpdidVU6jl0g2EHU_kmXnquGwr73L_Za7xwFedfJOagGJO11gEur2z3czzFfuwTlV3jlbXK7hav_r6NYF6fWCo033vIh35NSx9rjxWhE1CGLPbkt80uelHrOKM',
+                      fit: BoxFit.cover,
+                      memCacheWidth: 600,
+                      grayscale: true,
                     ),
                     Positioned(
                       top: 16,
@@ -509,39 +496,30 @@ class _HomeScreenState extends State<HomeScreen> {
           border: AppThemeConstants.brutalBorder,
           boxShadow: AppThemeConstants.brutalShadow,
         ),
-      height: 120,
-      child: Stack(
-        children: [
-          Row(
-            children: [
-              // Image
-              Container(
-                width: 120,
-                height: double.infinity,
-                decoration: const BoxDecoration(
-                  border: Border(right: BorderSide(color: AppColors.primary, width: 4)),
-                ),
-                child: ColorFiltered(
-                  colorFilter: const ColorFilter.mode(
-                    Colors.grey,
-                    BlendMode.saturation,
+        height: 120,
+        child: Stack(
+          children: [
+            Row(
+              children: [
+                // Image
+                Container(
+                  width: 120,
+                  height: double.infinity,
+                  decoration: const BoxDecoration(
+                    border: Border(right: BorderSide(color: AppColors.primary, width: 4)),
                   ),
-                  child: Opacity(
+                  child: BrutalCachedImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                    memCacheWidth: 300,
+                    grayscale: true,
                     opacity: isAvailable ? 1.0 : 0.5,
-                    child: BrutalCachedImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 300,
-                    ),
                   ),
                 ),
-              ),
-              // Content
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Opacity(
-                    opacity: isAvailable ? 1.0 : 0.5,
+                // Content
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -593,29 +571,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          // Out of stock overlay
-          if (!isAvailable)
-            Container(
-              color: AppColors.surfaceDim.withValues(alpha: 0.5),
-              child: Center(
-                child: Transform.rotate(
-                  angle: -15 * pi / 180,
-                  child: Container(
-                    color: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    child: Text(
-                      'HABIS',
-                      style: AppTypography.labelMono.copyWith(color: AppColors.onPrimary),
+              ],
+            ),
+            // Out of stock overlay
+            if (!isAvailable)
+              Container(
+                color: AppColors.surfaceDim.withValues(alpha: 0.5),
+                child: Center(
+                  child: Transform.rotate(
+                    angle: -15 * pi / 180,
+                    child: Container(
+                      color: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      child: Text(
+                        'HABIS',
+                        style: AppTypography.labelMono.copyWith(color: AppColors.onPrimary),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }

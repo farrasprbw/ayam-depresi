@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
 /// Cached network image with brutalist placeholder/error states
+/// Supports optional grayscale and opacity for performance
 class BrutalCachedImage extends StatelessWidget {
   final String imageUrl;
   final BoxFit fit;
@@ -10,6 +11,8 @@ class BrutalCachedImage extends StatelessWidget {
   final double? height;
   final int? memCacheWidth;
   final int? memCacheHeight;
+  final bool grayscale;
+  final double opacity;
 
   const BrutalCachedImage({
     super.key,
@@ -19,11 +22,13 @@ class BrutalCachedImage extends StatelessWidget {
     this.height,
     this.memCacheWidth,
     this.memCacheHeight,
+    this.grayscale = false,
+    this.opacity = 1.0,
   });
 
   @override
   Widget build(BuildContext context) {
-    return CachedNetworkImage(
+    Widget image = CachedNetworkImage(
       imageUrl: imageUrl,
       fit: fit,
       width: width,
@@ -50,6 +55,20 @@ class BrutalCachedImage extends StatelessWidget {
           child: Icon(Icons.broken_image, color: AppColors.secondary, size: 32),
         ),
       ),
+      // Use color blend for grayscale instead of ColorFiltered widget
+      color: grayscale ? Colors.grey : null,
+      colorBlendMode: grayscale ? BlendMode.saturation : null,
     );
+
+    // Use color-based opacity instead of Opacity widget
+    if (opacity < 1.0) {
+      image = Opacity(
+        alwaysIncludeSemantics: true,
+        opacity: opacity,
+        child: image,
+      );
+    }
+
+    return image;
   }
 }

@@ -6,7 +6,6 @@ import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
 import '../widgets/brutal_cached_image.dart';
 import '../widgets/brutal_text_field.dart';
-import '../widgets/grain_overlay.dart';
 
 class MenuDetailScreen extends StatefulWidget {
   const MenuDetailScreen({super.key});
@@ -36,15 +35,12 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            const Positioned.fill(
-              child: GrainOverlay(opacity: 0.05),
-            ),
             Column(
               children: [
                 _buildTopAppBar(),
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.only(bottom: 120), // Space for bottom bar
+                    padding: const EdgeInsets.only(bottom: 120),
                     children: [
                       _buildHeroImage(),
                       Padding(
@@ -175,16 +171,11 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            ColorFiltered(
-              colorFilter: const ColorFilter.mode(
-                Colors.grey,
-                BlendMode.saturation,
-              ),
-              child: BrutalCachedImage(
-                imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCw4FW_xrUcUy_RbcmbJFnxJbmteucBxnIDCrtQG5MldX_g89FjqXdufRhi1LjBIxfcQIKu72E12RYfM-pLMMJOY8lKFuK2mpBs6_oY-7OSe2GhSd1-Nu_EnrugVXjiR0AQW3d5wXujgGhuL_647gpdidVU6jl0g2EHU_kmXnquGwr73L_Za7xwFedfJOagGJO11gEur2z3czzFfuwTlV3jlbXK7hav_r6NYF6fWCo033vIh35NSx9rjxWhE1CGLPbkt80uelHrOKM',
-                fit: BoxFit.cover,
-                memCacheWidth: 600,
-              ),
+            BrutalCachedImage(
+              imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCw4FW_xrUcUy_RbcmbJFnxJbmteucBxnIDCrtQG5MldX_g89FjqXdufRhi1LjBIxfcQIKu72E12RYfM-pLMMJOY8lKFuK2mpBs6_oY-7OSe2GhSd1-Nu_EnrugVXjiR0AQW3d5wXujgGhuL_647gpdidVU6jl0g2EHU_kmXnquGwr73L_Za7xwFedfJOagGJO11gEur2z3czzFfuwTlV3jlbXK7hav_r6NYF6fWCo033vIh35NSx9rjxWhE1CGLPbkt80uelHrOKM',
+              fit: BoxFit.cover,
+              memCacheWidth: 600,
+              grayscale: true,
             ),
             // Dark vignette/gradient overlay
             Container(

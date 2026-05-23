@@ -5,7 +5,6 @@ import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
 import '../widgets/brutal_cached_image.dart';
-import '../widgets/grain_overlay.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -38,36 +37,28 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            // Atmospheric Noise Overlay
-            const Positioned.fill(
-              child: GrainOverlay(opacity: 0.03),
-            ),
-            Column(
-              children: [
-                _buildTopAppBar(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: AppThemeConstants.marginMobile, vertical: 32),
-                    child: Column(
-                      children: [
-                        _buildLogoMascot(),
-                        const SizedBox(height: 40),
-                        _buildTypographyCluster(),
-                        const SizedBox(height: 32),
-                        _buildFormSection(),
-                        const SizedBox(height: 48),
-                        _buildFooterLink(),
-                        const SizedBox(height: 64),
-                        _buildDecorativeElements(),
-                      ],
-                    ),
-                  ),
+            _buildTopAppBar(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: AppThemeConstants.marginMobile, vertical: 32),
+                child: Column(
+                  children: [
+                    _buildLogoMascot(),
+                    const SizedBox(height: 40),
+                    _buildTypographyCluster(),
+                    const SizedBox(height: 32),
+                    _buildFormSection(),
+                    const SizedBox(height: 48),
+                    _buildFooterLink(),
+                    const SizedBox(height: 64),
+                    _buildDecorativeElements(),
+                  ],
                 ),
-                _buildBottomMarquee(),
-              ],
+              ),
             ),
+            _buildBottomMarquee(),
           ],
         ),
       ),

@@ -5,7 +5,6 @@ import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
 import '../widgets/brutal_text_field.dart';
-import '../widgets/grain_overlay.dart';
 import 'forgot_password_screen.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
@@ -72,60 +71,46 @@ class _LoginScreenState extends State<LoginScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Stack(
-        children: [
-          // Grainy texture overlay (programmatic)
-          const Positioned.fill(
-            child: GrainOverlay(opacity: 0.04),
-          ),
-          // Main content
-          SafeArea(
-            child: Column(
-              children: [
-                // AppBar
-                _buildAppBar(),
-                // Scrollable content
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppThemeConstants.marginMobile,
-                      vertical: 24,
-                    ),
-                    child: AnimatedBuilder(
-                      animation: _animController,
-                      builder: (context, child) {
-                        return Column(
-                          children: [
-                            const SizedBox(height: 16),
-                            // Login card
-                            Transform.translate(
-                              offset: Offset(0, _cardSlideAnimation.value),
-                              child: Opacity(
-                                opacity: _cardFadeAnimation.value,
-                                child: _buildLoginCard(),
-                              ),
-                            ),
-                            const SizedBox(height: 32),
-                            // Extra flair
-                            Transform.translate(
-                              offset: Offset(0, _flairSlideAnimation.value),
-                              child: Opacity(
-                                opacity: _cardFadeAnimation.value,
-                                child: _buildExtraFlair(),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildAppBar(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppThemeConstants.marginMobile,
+                  vertical: 24,
                 ),
-                // Footer
-                _buildFooter(),
-              ],
+                child: AnimatedBuilder(
+                  animation: _animController,
+                  builder: (context, child) {
+                    return Column(
+                      children: [
+                        const SizedBox(height: 16),
+                        Transform.translate(
+                          offset: Offset(0, _cardSlideAnimation.value),
+                          child: Opacity(
+                            opacity: _cardFadeAnimation.value,
+                            child: _buildLoginCard(),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        Transform.translate(
+                          offset: Offset(0, _flairSlideAnimation.value),
+                          child: Opacity(
+                            opacity: _cardFadeAnimation.value,
+                            child: _buildExtraFlair(),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
             ),
-          ),
-        ],
+            _buildFooter(),
+          ],
+        ),
       ),
     );
   }
@@ -151,16 +136,18 @@ class _LoginScreenState extends State<LoginScreen>
           SizedBox(
             width: 32,
             height: 32,
-            child: ColorFiltered(
-              colorFilter: const ColorFilter.matrix(<double>[
-                0.33, 0.33, 0.33, 0, 0,
-                0.33, 0.33, 0.33, 0, 0,
-                0.33, 0.33, 0.33, 0, 0,
-                0, 0, 0, 1, 0,
-              ]),
-              child: Image.asset(
-                'assets/images/logo.png',
-                fit: BoxFit.contain,
+            child: RepaintBoundary(
+              child: ColorFiltered(
+                colorFilter: const ColorFilter.matrix(<double>[
+                  0.33, 0.33, 0.33, 0, 0,
+                  0.33, 0.33, 0.33, 0, 0,
+                  0.33, 0.33, 0.33, 0, 0,
+                  0, 0, 0, 1, 0,
+                ]),
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ),
