@@ -4,6 +4,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
+import '../widgets/brutal_cached_image.dart';
 import '../widgets/grain_overlay.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -165,9 +166,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                       ],
                     ),
                     padding: const EdgeInsets.all(8),
-                    child: Image.network(
-                      'https://lh3.googleusercontent.com/aida/ADBb0uie6AY74EpvJLHRydiYREAjrRghlkTvURAaeyVSthBmBGJCSXgFJ1pQAzL91-r7XkFPJGSNJn8fFtOkHr98RIGi37Wtuvo3mSNPslxwSFS25v6ZNtAjnDE25Ybm6U74bI44kxFFXBH27VSg4R95Ymdjwm3KbuqAFCzbycNLv6Fu68iEz0qAwmxNjOJLBYKP0HnayhkNQy7zyxihncn6UmMYi62xAUJNl5R6QA4plwscMr0stzPvXX-DuA',
+                    child: BrutalCachedImage(
+                      imageUrl: 'https://lh3.googleusercontent.com/aida/ADBb0uie6AY74EpvJLHRydiYREAjrRghlkTvURAaeyVSthBmBGJCSXgFJ1pQAzL91-r7XkFPJGSNJn8fFtOkHr98RIGi37Wtuvo3mSNPslxwSFS25v6ZNtAjnDE25Ybm6U74bI44kxFFXBH27VSg4R95Ymdjwm3KbuqAFCzbycNLv6Fu68iEz0qAwmxNjOJLBYKP0HnayhkNQy7zyxihncn6UmMYi62xAUJNl5R6QA4plwscMr0stzPvXX-DuA',
                       fit: BoxFit.contain,
+                      memCacheWidth: 256,
                     ),
                   ),
                 ),
