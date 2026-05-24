@@ -7,6 +7,9 @@ import '../widgets/brutal_button.dart';
 import '../widgets/brutal_cached_image.dart';
 import 'cart_screen.dart';
 import 'order_status_screen.dart';
+import '../services/order_service.dart';
+import '../models/order_model.dart';
+import 'package:intl/intl.dart';
 
 class HistoryScreenContent extends StatefulWidget {
   const HistoryScreenContent({super.key});
@@ -25,54 +28,73 @@ class _HistoryScreenContentState extends State<HistoryScreenContent> {
         _buildTopAppBar(context),
         _buildTabs(),
         Expanded(
-          child: _selectedTabIndex == 0
-              ? _buildActiveOrderView()
-              : ListView(
-                  padding: const EdgeInsets.symmetric(
-              horizontal: AppThemeConstants.marginMobile,
-              vertical: 24,
-            ),
-            children: [
-              _buildHeroSection(),
-              const SizedBox(height: 32),
-              _buildHistoryItem(
-                date: '24 OKT 2023 • 19:45',
-                title: 'PAKET MELEDAK LEVEL 10',
-                status: 'SUDAH MELEDAK',
-                description:
-                    '1x Ayam Geprek Jahanam, 1x Nasi Putih Pucat, 1x Es Teh Tawar Hambar.',
-                price: 'RP 45.000',
-                imageUrl:
-                    'https://lh3.googleusercontent.com/aida-public/AB6AXuBa0D7IFlRZvTc_ppq_HHqnY7qnTx-TPEs0OD3eTi9iZmAWgx7eJfoWVTOvnYKV4D40MwWPiPhrNixD1D_3VgGceUMYNNaMwwwNH8IwzbSbFKJo_VkedjGgGNltAjL-OWoy0zDsYebpIpTMXQIn8a40ZNtTtrVhCqsv4kKAL8CSa_PBpRX8rjNCsTY6q9R4QIPCECK7Cx50pjOu1raDcecaF-ZSEYL4rsXJBIVJCnPwDe1kRKIhy5DdgF2SQmAVZ7hhW2rtxD6eclM',
-                isSoldOut: false,
-              ),
-              const SizedBox(height: 24),
-              _buildHistoryItem(
-                date: '15 OKT 2023 • 12:10',
-                title: 'COMBO DEPRESI BERAT',
-                status: 'SUDAH MELEDAK',
-                description:
-                    '2x Ayam Geprek Original, 1x Kol Goreng Krisis, 2x Nasi.',
-                price: 'RP 68.000',
-                imageUrl:
-                    'https://lh3.googleusercontent.com/aida-public/AB6AXuBVfMR3UA_4KNPPbuyYqvkzx61odX6d71zdWglPQmAtNcLk-kxcjh1Kye1_YfUwDIQnS-pvV3SzSy_qUKEz3tWliIXGav8eUzU-CxEyvUVyRb_dZl-Y-7XIQ9Olb5bPKO9WYpE8nW1oqT0VkPGCcKSd-M8HG9ngirVo9y-7n4EGe5XQTPQxUgBKC8x4tv1lT9vUeIq7wo8xHyRmX_HngsfaMJJ1IyhBDmwNmSIf-ls4AozyvzAIVLsq7Y-WhBXbZ4FkDN3KiugTPQg',
-                isSoldOut: false,
-              ),
-              const SizedBox(height: 24),
-              _buildHistoryItem(
-                date: '01 OKT 2023 • 21:00',
-                title: 'SAYAP PATAH HATI',
-                status: 'TIDAK TERSEDIA',
-                description: '6x Wings Level 5, 1x Saus Airmata.',
-                price: 'RP 32.000',
-                imageUrl:
-                    'https://lh3.googleusercontent.com/aida-public/AB6AXuBMukt_uznKY7Dvxfi67h-t0o8F3L0Kc_V8i0MBLfiUk3UoazLzyX4mqi_5-7AO-rCX8VFKv-jbQX01d6IccncGlFtknM3kF7N76YPoqm2ke1Z5lYl3HCxKQp6c1MrlGy42_J6PXmyCaNmvutTpUhjQvwWS-kbUe2Ih5sWYdTp-d24BLSkBkmak3_HRmqasacY7VC9q_o0TjCPNZvkDCIMP98IyujLNHbsbfPCCCeSYtjinTyylUr4AnvY-GD5caB6Vh2j7SSLAjCA',
-                isSoldOut: true,
-              ),
-              const SizedBox(height: 96),
-            ],
+          child: StreamBuilder<List<OrderModel>>(
+            stream: OrderService().getUserOrders(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+              }
+
+              final orders = snapshot.data ?? [];
+              final activeOrders = orders.where((o) => ['PENDING', 'PREPARING', 'DELIVERING'].contains(o.status)).toList();
+              final pastOrders = orders.where((o) => !['PENDING', 'PREPARING', 'DELIVERING'].contains(o.status)).toList();
+
+              if (_selectedTabIndex == 0) {
+                return _buildActiveOrderView(activeOrders);
+              } else {
+                return _buildPastOrderView(pastOrders);
+              }
+            },
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildPastOrderView(List<OrderModel> pastOrders) {
+    if (pastOrders.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text(
+            'BELUM ADA DOSA MASA LALU.',
+            style: AppTypography.headlineMd.copyWith(color: AppColors.secondary),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
+    final formatCurrency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final formatDate = DateFormat('dd MMM yyyy • HH:mm');
+
+    return ListView(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppThemeConstants.marginMobile,
+        vertical: 24,
+      ),
+      children: [
+        _buildHeroSection(),
+        const SizedBox(height: 32),
+        ...pastOrders.map((order) {
+          String firstItemName = order.items.isNotEmpty ? order.items.first['title'] : 'Pesanan Misterius';
+          String desc = '${order.items.length} Macam Penderitaan';
+          String img = order.items.isNotEmpty ? order.items.first['imageUrl'] : '';
+          
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: _buildHistoryItem(
+              date: formatDate.format(order.createdAt),
+              title: firstItemName.toUpperCase(),
+              status: order.status,
+              description: desc,
+              price: formatCurrency.format(order.totalAmount),
+              imageUrl: img,
+              isSoldOut: order.status == 'CANCELLED',
+            ),
+          );
+        }),
+        const SizedBox(height: 96),
       ],
     );
   }
@@ -222,13 +244,13 @@ class _HistoryScreenContentState extends State<HistoryScreenContent> {
                       bottom: BorderSide(color: AppColors.primary, width: 4),
                     ),
                   ),
-                  child: BrutalCachedImage(
+                  child: imageUrl.isNotEmpty ? BrutalCachedImage(
                     imageUrl: imageUrl,
                     fit: BoxFit.cover,
                     memCacheWidth: 600,
                     grayscale: true,
                     opacity: isSoldOut ? 0.5 : 1.0,
-                  ),
+                  ) : Container(color: AppColors.outline),
                 ),
                 const SizedBox(height: 16),
                 // Content
@@ -445,7 +467,22 @@ class _HistoryScreenContentState extends State<HistoryScreenContent> {
     );
   }
 
-  Widget _buildActiveOrderView() {
-    return const OrderStatusView();
+  Widget _buildActiveOrderView(List<OrderModel> activeOrders) {
+    if (activeOrders.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text(
+            'BELUM ADA DOSA YANG BERJALAN.',
+            style: AppTypography.headlineMd.copyWith(color: AppColors.secondary),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+    
+    // For simplicity, just track the latest active order
+    final latestOrder = activeOrders.first;
+    return OrderStatusView(orderId: latestOrder.id);
   }
 }

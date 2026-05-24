@@ -6,8 +6,10 @@ import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
 import '../widgets/brutal_text_field.dart';
 import 'forgot_password_screen.dart';
-import 'otp_screen.dart';
+
 import 'register_screen.dart';
+import '../services/auth_service.dart';
+import 'home_screen.dart';
 
 /// Login screen — "MASUK KE NERAKA"
 /// Brutalist design with tilted card, hard-drop shadows, ironic copy
@@ -26,6 +28,9 @@ class _LoginScreenState extends State<LoginScreen>
   late Animation<double> _cardSlideAnimation;
   late Animation<double> _cardFadeAnimation;
   late Animation<double> _flairSlideAnimation;
+  
+  bool _isLoading = false;
+  final _authService = AuthService();
 
   @override
   void initState() {
@@ -212,8 +217,8 @@ class _LoginScreenState extends State<LoginScreen>
 
             // Identity field
             BrutalTextField(
-              label: 'IDENTITASMU',
-              placeholder: 'No. WhatsApp / Email...',
+              label: 'USERNAME',
+              placeholder: 'Masukkan username...',
               controller: _identityController,
             ),
             const SizedBox(height: 24),
@@ -251,12 +256,14 @@ class _LoginScreenState extends State<LoginScreen>
             const SizedBox(height: 24),
 
             // Login button
-            BrutalButton(
-              text: 'LOGIN & PESAN',
-              icon: Icons.local_fire_department,
-              isPrimary: true,
-              onPressed: _handleLogin,
-            ),
+            _isLoading
+              ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+              : BrutalButton(
+                  text: 'LOGIN & PESAN',
+                  icon: Icons.local_fire_department,
+                  isPrimary: true,
+                  onPressed: _handleLogin,
+                ),
             const SizedBox(height: 16),
 
             // Register button
@@ -375,30 +382,53 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  void _handleLogin() {
-    // Show a quick snackbar then navigate
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AppColors.primary,
-        content: Text(
-          'SELAMAT DATANG DI NERAKA 🔥',
-          style: AppTypography.labelMono.copyWith(color: AppColors.onPrimary),
-        ),
-        duration: const Duration(milliseconds: 1000),
-      ),
-    );
+  void _handleLogin() async {
+    final username = _identityController.text.trim();
+    final password = _passwordController.text;
 
-    Future.delayed(const Duration(milliseconds: 800), () {
+    if (username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Isi identitas dan rahasiamu.')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _authService.login(username: username, password: password);
+      
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const OtpScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.primary,
+          content: Text(
+            'SELAMAT DATANG DI NERAKA 🔥',
+            style: AppTypography.labelMono.copyWith(color: AppColors.onPrimary),
+          ),
+          duration: const Duration(milliseconds: 1000),
         ),
       );
-    });
+
+      // Navigate to Home directly
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          ),
+        );
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   void _handleRegister() {

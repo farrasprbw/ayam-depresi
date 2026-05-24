@@ -11,6 +11,11 @@ import 'history_screen.dart';
 import 'profile_screen.dart';
 import 'cart_screen.dart';
 import 'menu_screen.dart';
+import 'package:provider/provider.dart';
+import '../models/menu_item.dart';
+import '../services/menu_service.dart';
+import '../providers/cart_provider.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -115,22 +120,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: AppColors.error,
-                        border: Border.all(color: AppColors.primary, width: 2),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '3',
-                          style: AppTypography.labelMonoSmall.copyWith(
-                            color: AppColors.onError,
-                            fontSize: 8,
+                    child: Consumer<CartProvider>(
+                      builder: (context, cart, child) {
+                        if (cart.itemCount == 0) return const SizedBox.shrink();
+                        return Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: AppColors.error,
+                            border: Border.all(color: AppColors.primary, width: 2),
                           ),
-                        ),
-                      ),
+                          child: Center(
+                            child: Text(
+                              '${cart.itemCount}',
+                              style: AppTypography.labelMonoSmall.copyWith(
+                                color: AppColors.onError,
+                                fontSize: 8,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -352,155 +362,165 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 24),
 
-        // Large Item (Paket Putus Cinta)
-        GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const MenuDetailScreen()),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainerLowest,
-              border: AppThemeConstants.brutalBorder,
-              boxShadow: AppThemeConstants.brutalShadow,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        StreamBuilder<List<MenuItem>>(
+          stream: MenuService().getFeaturedMenus(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+            }
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Text('TIDAK ADA REKOMENDASI HARI INI.');
+            }
+
+            final menus = snapshot.data!;
+            final mainFeatured = menus.first;
+            final otherFeatured = menus.length > 1 ? menus.sublist(1) : <MenuItem>[];
+
+            return Column(
               children: [
-                // Image container
-                Container(
-                  height: 200,
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: AppColors.surfaceContainerHigh,
-                    border: Border(
-                      bottom: BorderSide(color: AppColors.primary, width: 4),
+                // Large Item
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MenuDetailScreen()),
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainerLowest,
+                      border: AppThemeConstants.brutalBorder,
+                      boxShadow: AppThemeConstants.brutalShadow,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Image container
+                        Container(
+                          height: 200,
+                          width: double.infinity,
+                          decoration: const BoxDecoration(
+                            color: AppColors.surfaceContainerHigh,
+                            border: Border(
+                              bottom: BorderSide(color: AppColors.primary, width: 4),
+                            ),
+                          ),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              BrutalCachedImage(
+                                imageUrl: mainFeatured.imageUrl,
+                                fit: BoxFit.cover,
+                                memCacheWidth: 600,
+                                grayscale: mainFeatured.isGrayscale,
+                              ),
+                              Positioned(
+                                top: 16,
+                                left: 16,
+                                child: Transform.rotate(
+                                  angle: -3 * pi / 180,
+                                  child: Container(
+                                    color: AppColors.primary,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    child: Text(
+                                      'BEST SELLER',
+                                      style: AppTypography.labelMono.copyWith(
+                                        color: AppColors.onPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Content
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                mainFeatured.title.toUpperCase(),
+                                style: AppTypography.headlineMd.copyWith(fontSize: 24),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                mainFeatured.description,
+                                style: AppTypography.bodyMd.copyWith(
+                                  color: AppColors.secondary,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surfaceContainer,
+                                      border: Border.all(
+                                        color: AppColors.primary,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
+                                          .format(mainFeatured.price),
+                                      style: AppTypography.labelMono.copyWith(
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                  ),
+                                  BrutalButton(
+                                    text: 'TAMBAH',
+                                    icon: Icons.add,
+                                    isPrimary: true,
+                                    onPressed: () {
+                                      context.read<CartProvider>().addItem(mainFeatured);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('${mainFeatured.title} ditambah ke keranjang.')),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  child: Stack(
-                    fit: StackFit.expand,
+                ), // Close GestureDetector
+
+                if (otherFeatured.isNotEmpty) ...otherFeatured.map((item) {
+                  return Column(
                     children: [
-                      BrutalCachedImage(
-                        imageUrl:
-                            'https://lh3.googleusercontent.com/aida-public/AB6AXuCw4FW_xrUcUy_RbcmbJFnxJbmteucBxnIDCrtQG5MldX_g89FjqXdufRhi1LjBIxfcQIKu72E12RYfM-pLMMJOY8lKFuK2mpBs6_oY-7OSe2GhSd1-Nu_EnrugVXjiR0AQW3d5wXujgGhuL_647gpdidVU6jl0g2EHU_kmXnquGwr73L_Za7xwFedfJOagGJO11gEur2z3czzFfuwTlV3jlbXK7hav_r6NYF6fWCo033vIh35NSx9rjxWhE1CGLPbkt80uelHrOKM',
-                        fit: BoxFit.cover,
-                        memCacheWidth: 600,
-                        grayscale: true,
-                      ),
-                      Positioned(
-                        top: 16,
-                        left: 16,
-                        child: Transform.rotate(
-                          angle: -3 * pi / 180,
-                          child: Container(
-                            color: AppColors.primary,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            child: Text(
-                              'BEST SELLER',
-                              style: AppTypography.labelMono.copyWith(
-                                color: AppColors.onPrimary,
-                              ),
-                            ),
-                          ),
-                        ),
+                      const SizedBox(height: 24),
+                      _buildSmallMenuItem(
+                        menu: item,
                       ),
                     ],
-                  ),
-                ),
-                // Content
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'PAKET PUTUS CINTA',
-                        style: AppTypography.headlineMd.copyWith(fontSize: 24),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Nasi + Ayam Geprek Level Berat (Cabe 50) + Es Teh Manis untuk mendinginkan hati yang panas.',
-                        style: AppTypography.bodyMd.copyWith(
-                          color: AppColors.secondary,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceContainer,
-                              border: Border.all(
-                                color: AppColors.primary,
-                                width: 2,
-                              ),
-                            ),
-                            child: Text(
-                              'Rp 35.000',
-                              style: AppTypography.labelMono.copyWith(
-                                fontSize: 18,
-                              ),
-                            ),
-                          ),
-                          BrutalButton(
-                            text: 'TAMBAH',
-                            icon: Icons.add,
-                            isPrimary: true,
-                            onPressed: () {},
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                  );
+                }),
               ],
-            ),
-          ),
-        ), // Close GestureDetector
-
-        const SizedBox(height: 24),
-
-        // Small Item (Kol Goreng Ngenes)
-        _buildSmallMenuItem(
-          title: 'KOL GORENG\nNGENES',
-          originalPrice: 'Rp 15.000',
-          price: 'Rp 10.000',
-          imageUrl:
-              'https://lh3.googleusercontent.com/aida-public/AB6AXuCmrIiEezVpeyUssw0OJUnheDn7WEULbp8X3_TbBdy8F3gHNWIEa62gU5tD6K2Ob-NiHjTid407t4OCRKoGgx6ZlNq-lJLgfA_usjapXJ_HUKuEICZ9D375hps7OLUQh_W68s4VLjI-xxCZifrL__4paeyWK3prwbLq5959JB4beYWO_rIq1cymuQLFdfAcjqL1DRR0hegIQR09UzJqsRZuPvjl0F3GmUD8jeLYn0sl0X0IfYLBsr3ENXR-9W74NSDcwyWzqYEp5M8',
-          isAvailable: true,
-        ),
-
-        const SizedBox(height: 24),
-
-        // Small Item (Kulit Krispi Kandas - HABIS)
-        _buildSmallMenuItem(
-          title: 'KULIT KRISPI\nKANDAS',
-          price: 'Rp 12.000',
-          imageUrl:
-              'https://lh3.googleusercontent.com/aida-public/AB6AXuAi75Lcm9Z9sS7tqVJsCAvQcSIJcJFp_C8bZy1gAc_-DKzeUAtf4WuCsmmL8FWdasua5iWy1-cHUSbl2Go6CUlem4u4wNDkZdHYq7q0F9rUJ6kaAFLuWtV695o6HpedMZ_fgHpdnq8C7pdQReJ2S2zgbC-MxCfN441LOJ_vNuOxfE1qq6Nfiu_vZiGXojIIaPPnclqjItcGnAE0t2Q_uJc3-zQC5HxlTIZzEE9pV4CENF7n1_K3GSOMVzp3re5LYzShypPl0tK90Rs',
-          isAvailable: false,
+            );
+          },
         ),
       ],
     );
   }
 
   Widget _buildSmallMenuItem({
-    required String title,
-    String? originalPrice,
-    required String price,
-    required String imageUrl,
-    required bool isAvailable,
+    required MenuItem menu,
   }) {
+    final formatCurrency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
     return GestureDetector(
-      onTap: isAvailable
+      onTap: !menu.isSoldOut
           ? () => Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const MenuDetailScreen()),
@@ -527,11 +547,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   child: BrutalCachedImage(
-                    imageUrl: imageUrl,
+                    imageUrl: menu.imageUrl,
                     fit: BoxFit.cover,
                     memCacheWidth: 300,
-                    grayscale: true,
-                    opacity: isAvailable ? 1.0 : 0.5,
+                    grayscale: menu.isGrayscale,
+                    opacity: !menu.isSoldOut ? 1.0 : 0.5,
                   ),
                 ),
                 // Content
@@ -546,34 +566,30 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              title,
+                              menu.title.toUpperCase(),
                               style: AppTypography.labelMono.copyWith(
                                 fontSize: 16,
                               ),
                             ),
-                            if (originalPrice != null)
-                              Text(
-                                originalPrice,
-                                style: AppTypography.bodyMd.copyWith(
-                                  color: AppColors.secondary,
-                                  fontSize: 12,
-                                  decoration: TextDecoration.lineThrough,
-                                ),
-                              ),
                           ],
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              price,
+                              formatCurrency.format(menu.price),
                               style: AppTypography.labelMono.copyWith(
                                 fontSize: 14,
                               ),
                             ),
-                            if (isAvailable)
+                            if (!menu.isSoldOut)
                               GestureDetector(
-                                onTap: () {},
+                                onTap: () {
+                                  context.read<CartProvider>().addItem(menu);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('${menu.title} ditambah ke keranjang.')),
+                                  );
+                                },
                                 child: Container(
                                   width: 32,
                                   height: 32,
@@ -606,7 +622,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             // Out of stock overlay
-            if (!isAvailable)
+            if (menu.isSoldOut)
               Container(
                 color: AppColors.surfaceDim.withValues(alpha: 0.5),
                 child: Center(

@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "965428997529",
+    "project_id": "ayam-depresi",
+    "storage_bucket": "ayam-depresi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:965428997529:android:3e8fa4949f566d8d88b708",
+        "android_client_info": {
+          "package_name": "com.ayamdepresi.ayam_depresi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "965428997529-fcatdmtuutkn8tmvu7m2gjf80ehmthng.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4i0r7dtsjWDReEd1Oyj7_9Ld14G8KV34"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "965428997529-fcatdmtuutkn8tmvu7m2gjf80ehmthng.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "965428997529-pjq1bpbq5los2rhn053qo3v948eu735d.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ayamdepresi.ayamDepresi"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

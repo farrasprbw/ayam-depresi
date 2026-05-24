@@ -1,12 +1,16 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
+import '../services/order_service.dart';
+import '../models/order_model.dart';
 
 class OrderStatusView extends StatefulWidget {
-  const OrderStatusView({super.key});
+  final String orderId;
+  const OrderStatusView({super.key, required this.orderId});
 
   @override
   State<OrderStatusView> createState() => _OrderStatusViewState();
@@ -38,35 +42,49 @@ class _OrderStatusViewState extends State<OrderStatusView>
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Dot pattern background
-        CustomPaint(painter: GridPatternPainter(), size: Size.infinite),
-        Column(
+    return StreamBuilder<OrderModel?>(
+      stream: OrderService().getOrderStream(widget.orderId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+        }
+        
+        final order = snapshot.data;
+        if (order == null) {
+          return const Center(child: Text('PESANAN TIDAK DITEMUKAN'));
+        }
+
+        return Stack(
           children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.only(
-                  left: AppThemeConstants.marginMobile,
-                  right: AppThemeConstants.marginMobile,
-                  top: 32,
-                  bottom: 120, // Space for bottom bar
+            // Dot pattern background
+            CustomPaint(painter: GridPatternPainter(), size: Size.infinite),
+            Column(
+              children: [
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.only(
+                      left: AppThemeConstants.marginMobile,
+                      right: AppThemeConstants.marginMobile,
+                      top: 32,
+                      bottom: 120, // Space for bottom bar
+                    ),
+                    children: [
+                      _buildHeaderSection(order),
+                      const SizedBox(height: 48),
+                      _buildTimelineSection(order),
+                    ],
+                  ),
                 ),
-                children: [
-                  _buildHeaderSection(),
-                  const SizedBox(height: 48),
-                  _buildTimelineSection(),
-                ],
-              ),
+              ],
             ),
+            _buildBottomBar(),
           ],
-        ),
-        _buildBottomBar(),
-      ],
+        );
+      }
     );
   }
 
-  Widget _buildHeaderSection() {
+  Widget _buildHeaderSection(OrderModel order) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
@@ -96,7 +114,7 @@ class _OrderStatusViewState extends State<OrderStatusView>
                   vertical: 4,
                 ),
                 child: Text(
-                  '#ORDER-99X21',
+                  'ORDER-${order.id.substring(0, min(8, order.id.length))}',
                   style: AppTypography.labelMono.copyWith(
                     color: AppColors.onPrimary,
                   ),
@@ -104,14 +122,14 @@ class _OrderStatusViewState extends State<OrderStatusView>
               ),
               const SizedBox(height: 16),
               Text(
-                'SEDANG DIPROSES',
+                order.status,
                 style: AppTypography.headlineLgMobile.copyWith(
                   color: AppColors.primary,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Est. Tiba: 14:45 WIB (Kalau abangnya nggak nyasar)',
+                'Alamat: ${order.deliveryAddress}',
                 style: AppTypography.bodyLg.copyWith(
                   color: AppColors.onSurfaceVariant,
                 ),
@@ -123,7 +141,12 @@ class _OrderStatusViewState extends State<OrderStatusView>
     );
   }
 
-  Widget _buildTimelineSection() {
+  Widget _buildTimelineSection(OrderModel order) {
+    final status = order.status;
+    bool isPending = status == 'PENDING';
+    bool isPreparing = status == 'PREPARING';
+    bool isDelivering = status == 'DELIVERING';
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -151,26 +174,45 @@ class _OrderStatusViewState extends State<OrderStatusView>
           ),
           const SizedBox(height: 32),
           // Timeline steps
-          _buildTimelineStep(
-            icon: Icons.restaurant,
-            title: 'DAPUR TERIMA',
-            description: '14:02 - Ayam lagi nangis di pojokan.',
-            isCompleted: true,
-            isLast: false,
-          ),
-          _buildTimelineStep(
-            icon: Icons.hardware, // Hammer for Digeprek
-            title: 'DIGEPREK',
-            description: '14:15 - Dipukul kerasnya kenyataan.',
-            isCompleted: true,
-            isLast: false,
-          ),
-          _buildActiveTimelineStep(),
+          
+          if (isPending) 
+            _buildActiveTimelineStep('PENDING', 'Pesanan masuk, bersiaplah.')
+          else
+            _buildTimelineStep(
+              icon: Icons.receipt_long,
+              title: 'PENDING',
+              description: 'Pesanan masuk.',
+              isCompleted: true,
+            ),
+            
+          if (isPreparing)
+            _buildActiveTimelineStep('PREPARING', 'Ayam lagi nangis di pojokan, digeprek.')
+          else
+            _buildTimelineStep(
+              icon: Icons.hardware, // Hammer for Digeprek
+              title: 'PREPARING',
+              description: 'Dipukul kerasnya kenyataan.',
+              isCompleted: status == 'DELIVERING' || status == 'COMPLETED',
+              isUpcoming: isPending,
+            ),
+            
+          if (isDelivering)
+            _buildActiveTimelineStep('DELIVERING', 'Kurir lagi jalan bawa kesedihanmu.')
+          else
+            _buildTimelineStep(
+              icon: Icons.directions_bike,
+              title: 'DELIVERING',
+              description: 'Diantar.',
+              isCompleted: status == 'COMPLETED',
+              isUpcoming: isPending || isPreparing,
+            ),
+            
           _buildTimelineStep(
             icon: Icons.meeting_room,
-            title: 'SAMPAI TUJUAN',
-            description: 'Siap-siap nangis bareng.',
-            isUpcoming: true,
+            title: 'COMPLETED',
+            description: 'Sampai Tujuan. Siap-siap nangis bareng.',
+            isUpcoming: status != 'COMPLETED',
+            isCompleted: status == 'COMPLETED',
             isLast: true,
             isDashedLine: true,
           ),
@@ -275,7 +317,7 @@ class _OrderStatusViewState extends State<OrderStatusView>
     );
   }
 
-  Widget _buildActiveTimelineStep() {
+  Widget _buildActiveTimelineStep(String title, String desc) {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -317,7 +359,7 @@ class _OrderStatusViewState extends State<OrderStatusView>
                       boxShadow: AppThemeConstants.brutalShadow,
                     ),
                     child: const Icon(
-                      Icons.directions_walk,
+                      Icons.local_fire_department,
                       color: Colors.white,
                     ),
                   ),
@@ -341,12 +383,12 @@ class _OrderStatusViewState extends State<OrderStatusView>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'DIANTAR',
+                      title,
                       style: AppTypography.headlineMd.copyWith(fontSize: 24),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '14:30 - Kurir lagi jalan bawa kesedihanmu.',
+                      desc,
                       style: AppTypography.bodyLg.copyWith(
                         fontWeight: FontWeight.bold,
                       ),

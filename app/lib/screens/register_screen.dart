@@ -4,6 +4,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
+import '../services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -13,9 +14,80 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final _usernameController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmController = TextEditingController();
+
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _termsAccepted = false;
+  bool _isLoading = false;
+
+  final _authService = AuthService();
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
+    _confirmController.dispose();
+    super.dispose();
+  }
+
+  void _handleRegister() async {
+    if (!_termsAccepted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Anda harus menyetujui syarat & ketentuan.')),
+      );
+      return;
+    }
+
+    final username = _usernameController.text.trim();
+    final name = _nameController.text.trim();
+    final phone = _phoneController.text.trim();
+    final password = _passwordController.text;
+    final confirm = _confirmController.text;
+
+    if (username.isEmpty || name.isEmpty || phone.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Semua kolom wajib diisi (beban hidup sudah berat).')),
+      );
+      return;
+    }
+
+    if (password != confirm) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Rahasia kelam tidak cocok dengan konfirmasi.')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _authService.register(
+        username: username,
+        name: name,
+        phone: phone,
+        password: password,
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pendaftaran sukses! Silakan login untuk mulai menderita.')),
+      );
+      Navigator.pop(context); // Kembali ke LoginScreen
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -176,20 +248,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                               // Fields
                               _buildUnderlineTextField(
+                                label: 'USERNAME (UNTUK LOGIN NANTI)',
+                                hint: 'Tanpa spasi...',
+                                controller: _usernameController,
+                              ),
+                              const SizedBox(height: 24),
+                              _buildUnderlineTextField(
                                 label: 'NAMA LENGKAP (SIAPA KAMU?)',
-                                hint:
-                                    'Nama yang akan kami panggil saat pesanan tiba...',
+                                hint: 'Nama yang dipanggil saat pesanan tiba...',
+                                controller: _nameController,
                               ),
                               const SizedBox(height: 24),
                               _buildUnderlineTextField(
                                 label: 'NO. WHATSAPP (BIAR BISA DIHUBUNGI)',
                                 hint: '0812...',
                                 keyboardType: TextInputType.phone,
+                                controller: _phoneController,
                               ),
                               const SizedBox(height: 24),
                               _buildUnderlineTextField(
                                 label: 'RAHASIA KELAM (KATA SANDI)',
                                 isPassword: true,
+                                controller: _passwordController,
                                 obscureText: !_isPasswordVisible,
                                 onToggleVisibility: () {
                                   setState(() {
@@ -201,6 +281,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               _buildUnderlineTextField(
                                 label: 'KONFIRMASI RAHASIA',
                                 isPassword: true,
+                                controller: _confirmController,
                                 obscureText: !_isConfirmPasswordVisible,
                                 onToggleVisibility: () {
                                   setState(() {
@@ -246,13 +327,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               const SizedBox(height: 40),
 
                               // Submit Button
-                              BrutalButton(
-                                text: 'MENDAFTAR & MENDERITA',
-                                isPrimary: true,
-                                onPressed: () {
-                                  Navigator.pop(context); // Go back to login
-                                },
-                              ),
+                              _isLoading 
+                                ? const CircularProgressIndicator(color: AppColors.primary)
+                                : BrutalButton(
+                                    text: 'MENDAFTAR & MENDERITA',
+                                    isPrimary: true,
+                                    onPressed: _handleRegister,
+                                  ),
 
                               const SizedBox(height: 40),
 
@@ -346,6 +427,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _buildUnderlineTextField({
     required String label,
     String? hint,
+    TextEditingController? controller,
     bool isPassword = false,
     bool obscureText = false,
     VoidCallback? onToggleVisibility,
@@ -357,6 +439,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Text(label, style: AppTypography.labelMono),
         const SizedBox(height: 8),
         TextFormField(
+          controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
           style: AppTypography.bodyMd,

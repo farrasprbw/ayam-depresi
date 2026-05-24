@@ -4,10 +4,20 @@ import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
 import 'otp_screen.dart'; // for HatchedPatternPainter
 import 'cart_screen.dart';
+import '../services/user_service.dart';
+import '../models/address_model.dart';
+import '../widgets/brutal_button.dart';
+import '../widgets/brutal_text_field.dart';
 
-class AddressScreen extends StatelessWidget {
-  const AddressScreen({super.key});
+class AddressScreen extends StatefulWidget {
+  final bool isSelectionMode;
+  const AddressScreen({super.key, this.isSelectionMode = false});
 
+  @override
+  State<AddressScreen> createState() => _AddressScreenState();
+}
+
+class _AddressScreenState extends State<AddressScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,39 +32,44 @@ class AddressScreen extends StatelessWidget {
                   Positioned.fill(
                     child: CustomPaint(painter: HatchedPatternPainter()),
                   ),
-                  ListView(
-                    padding: const EdgeInsets.only(
-                      left: AppThemeConstants.marginMobile,
-                      right: AppThemeConstants.marginMobile,
-                      top: 24,
-                      bottom: 120, // space for bottom button
-                    ),
-                    children: [
-                      _buildHeader(),
-                      const SizedBox(height: 32),
-                      _buildAddressCard(
-                        icon: Icons.apartment,
-                        title: 'KANTOR (TEMPAT CARI MASALAH)',
-                        address:
-                            'Sudirman Central Business District, Gedung Menara Putus Asa, Lt. 12, No. 1205. Jakarta Selatan.',
-                        isPrimary: true,
-                      ),
-                      const SizedBox(height: 24),
-                      _buildAddressCard(
-                        icon: Icons.home,
-                        title: 'GUBUK DERITA',
-                        address:
-                            'Jl. Kenangan Pahit No. 404, Komplek Harapan Palsu Blok C-10. Depok.',
-                      ),
-                      const SizedBox(height: 24),
-                      _buildAddressCard(
-                        icon: Icons.school,
-                        title: 'KAMPUS (WISUDA KAPAN?)',
-                        address:
-                            'Gedung Fakultas Teknik, Ruang Sidang Skripsi yang Selalu Ditolak, No. 13.',
-                        isDimmed: true,
-                      ),
-                    ],
+                  StreamBuilder<List<AddressModel>>(
+                    stream: UserService().getUserAddressesStream(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                      }
+                      
+                      final addresses = snapshot.data ?? [];
+
+                      return ListView(
+                        padding: const EdgeInsets.only(
+                          left: AppThemeConstants.marginMobile,
+                          right: AppThemeConstants.marginMobile,
+                          top: 24,
+                          bottom: 120, // space for bottom button
+                        ),
+                        children: [
+                          _buildHeader(),
+                          const SizedBox(height: 32),
+                          if (addresses.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 32),
+                              child: Text(
+                                'BELUM ADA ALAMAT. MAU DIKIRIM KE MANA DOSA INI?',
+                                style: AppTypography.headlineMd.copyWith(color: AppColors.secondary),
+                                textAlign: TextAlign.center,
+                              ),
+                            )
+                          else
+                            ...addresses.map((address) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 24),
+                                child: _buildAddressCard(address),
+                              );
+                            }),
+                        ],
+                      );
+                    }
                   ),
                   _buildBottomButton(),
                 ],
@@ -175,15 +190,19 @@ class AddressScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAddressCard({
-    required IconData icon,
-    required String title,
-    required String address,
-    bool isPrimary = false,
-    bool isDimmed = false,
-  }) {
-    return Opacity(
-      opacity: isDimmed ? 0.7 : 1.0,
+  Widget _buildAddressCard(AddressModel addressData) {
+    final bool isPrimary = addressData.isPrimary;
+    // We can pick an icon based on title or just use a generic one
+    IconData icon = Icons.location_on;
+    if (addressData.title.toLowerCase().contains('kantor')) icon = Icons.apartment;
+    if (addressData.title.toLowerCase().contains('rumah')) icon = Icons.home;
+    
+    return GestureDetector(
+      onTap: () {
+        if (widget.isSelectionMode) {
+          Navigator.pop(context, addressData);
+        }
+      },
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.surfaceContainerLowest,
@@ -219,43 +238,49 @@ class AddressScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          title,
+                          addressData.title,
                           style: AppTypography.headlineMd.copyWith(
                             fontSize: 18,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          address,
+                          addressData.address,
                           style: AppTypography.bodyMd.copyWith(
                             color: AppColors.secondary,
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            InkWell(
-                              onTap: () {},
-                              child: Text(
-                                isPrimary ? 'UBAH RINCIAN' : 'JADIKAN UTAMA',
-                                style: AppTypography.labelMono.copyWith(
-                                  decoration: TextDecoration.underline,
-                                  decorationThickness: 2,
+                        if (!widget.isSelectionMode)
+                          Row(
+                            children: [
+                              if (!isPrimary)
+                                InkWell(
+                                  onTap: () {
+                                    UserService().setPrimaryAddress(addressData.id);
+                                  },
+                                  child: Text(
+                                    'JADIKAN UTAMA',
+                                    style: AppTypography.labelMono.copyWith(
+                                      decoration: TextDecoration.underline,
+                                      decorationThickness: 2,
+                                    ),
+                                  ),
+                                ),
+                              if (!isPrimary) const SizedBox(width: 24),
+                              InkWell(
+                                onTap: () {
+                                  UserService().deleteAddress(addressData.id);
+                                },
+                                child: Text(
+                                  'HAPUS',
+                                  style: AppTypography.labelMono.copyWith(
+                                    color: AppColors.error,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 24),
-                            InkWell(
-                              onTap: () {},
-                              child: Text(
-                                isPrimary ? 'HAPUS' : 'EDIT',
-                                style: AppTypography.labelMono.copyWith(
-                                  color: AppColors.secondary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
                       ],
                     ),
                   ),
@@ -303,7 +328,9 @@ class AddressScreen extends StatelessWidget {
           color: AppColors.background.withValues(alpha: 0.9),
         ),
         child: InkWell(
-          onTap: () {},
+          onTap: () {
+            _showAddAddressDialog();
+          },
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
             decoration: BoxDecoration(
@@ -332,6 +359,69 @@ class AddressScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showAddAddressDialog() {
+    final titleController = TextEditingController();
+    final addressController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceContainerLowest,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(color: AppColors.primary, width: 4),
+            borderRadius: BorderRadius.zero,
+          ),
+          title: Text(
+            'TAMBAH ALAMAT',
+            style: AppTypography.headlineMd,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              BrutalTextField(
+                controller: titleController,
+                label: 'NAMA TEMPAT',
+                placeholder: 'Cth: Rumah, Kantor, Kosan',
+              ),
+              const SizedBox(height: 16),
+              BrutalTextField(
+                controller: addressController,
+                label: 'ALAMAT LENGKAP',
+                placeholder: 'Jl. Kenangan Pahit No. 404',
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
+            BrutalButton(
+              text: 'BATAL',
+              isPrimary: false,
+              onPressed: () => Navigator.pop(context),
+            ),
+            const SizedBox(height: 8),
+            BrutalButton(
+              text: 'SIMPAN',
+              isPrimary: true,
+              onPressed: () async {
+                if (titleController.text.isNotEmpty && addressController.text.isNotEmpty) {
+                  await UserService().addAddress(
+                    AddressModel(
+                      id: '',
+                      title: titleController.text.trim(),
+                      address: addressController.text.trim(),
+                    ),
+                  );
+                  if (context.mounted) Navigator.pop(context);
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

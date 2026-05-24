@@ -7,9 +7,10 @@ import '../widgets/brutal_button.dart';
 import '../widgets/brutal_cached_image.dart';
 import 'cart_screen.dart';
 import 'address_screen.dart';
-import 'payment_screen.dart';
 import 'login_screen.dart';
 import 'history_screen.dart';
+import '../services/user_service.dart';
+import '../models/user_model.dart';
 
 class ProfileScreenContent extends StatelessWidget {
   const ProfileScreenContent({super.key});
@@ -20,25 +21,39 @@ class ProfileScreenContent extends StatelessWidget {
       children: [
         _buildTopAppBar(context),
         Expanded(
-          child: ListView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppThemeConstants.marginMobile,
-              vertical: 24,
-            ),
-            children: [
-              _buildProfileHeader(),
-              const SizedBox(height: 32),
-              Container(
-                height: 4,
-                color: AppColors.primary,
-                width: double.infinity,
-              ),
-              const SizedBox(height: 32),
-              _buildSettingsList(context),
-              const SizedBox(height: 48),
-              _buildLogoutButton(context),
-              const SizedBox(height: 48),
-            ],
+          child: StreamBuilder<UserModel?>(
+            stream: UserService().getUserProfileStream(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+              }
+              if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+                return const Center(child: Text('Gagal memuat profil penderitaan.'));
+              }
+
+              final user = snapshot.data!;
+
+              return ListView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppThemeConstants.marginMobile,
+                  vertical: 24,
+                ),
+                children: [
+                  _buildProfileHeader(user),
+                  const SizedBox(height: 32),
+                  Container(
+                    height: 4,
+                    color: AppColors.primary,
+                    width: double.infinity,
+                  ),
+                  const SizedBox(height: 32),
+                  _buildSettingsList(context),
+                  const SizedBox(height: 48),
+                  _buildLogoutButton(context),
+                  const SizedBox(height: 48),
+                ],
+              );
+            }
           ),
         ),
       ],
@@ -131,7 +146,14 @@ class ProfileScreenContent extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(UserModel user) {
+    // Determine level string based on orders
+    String level = 'PEMULA';
+    if (user.totalOrder > 10) level = 'MENENGAH';
+    if (user.totalOrder > 50) level = 'EXTREME';
+
+    final joinYear = user.createdAt.year;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -192,7 +214,7 @@ class ProfileScreenContent extends StatelessWidget {
         const SizedBox(height: 32),
         // User Info
         Text(
-          'ADI SI PENYABAR',
+          user.nama.toUpperCase(),
           style: AppTypography.headlineLg.copyWith(fontSize: 32),
           textAlign: TextAlign.center,
         ),
@@ -207,7 +229,7 @@ class ProfileScreenContent extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              'KORBAN SEJAK 2023',
+              'KORBAN SEJAK $joinYear',
               style: AppTypography.labelMono.copyWith(
                 color: AppColors.secondary,
               ),
@@ -220,8 +242,8 @@ class ProfileScreenContent extends StatelessWidget {
           children: [
             Expanded(
               child: _buildStatCard(
-                title: 'TOTAL CABAI TERTELAN',
-                value: '12,402 BIJI',
+                title: 'TOTAL PESANAN',
+                value: '${user.totalOrder} KALI',
                 valueColor: AppColors.error,
               ),
             ),
@@ -229,7 +251,7 @@ class ProfileScreenContent extends StatelessWidget {
             Expanded(
               child: _buildStatCard(
                 title: 'LEVEL DEPRESI SAAT INI',
-                value: 'EXTREME',
+                value: level,
                 icon: Icons.local_fire_department,
                 iconColor: AppColors.error,
               ),
@@ -309,17 +331,6 @@ class ProfileScreenContent extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const AddressScreen()),
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        _buildSettingItem(
-          icon: Icons.payments,
-          title: 'Metode Pembayaran (Duit Panas)',
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const PaymentScreen()),
             );
           },
         ),

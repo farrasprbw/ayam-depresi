@@ -4,7 +4,14 @@ import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
 import '../widgets/brutal_cached_image.dart';
-import 'otp_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/cart_provider.dart';
+import '../models/cart_item.dart';
+import 'package:intl/intl.dart';
+import '../widgets/brutal_text_field.dart';
+import '../models/address_model.dart';
+import 'address_screen.dart';
+import 'payment_screen.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -14,6 +21,15 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  final TextEditingController _notesController = TextEditingController();
+  AddressModel? _selectedAddress;
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,32 +47,113 @@ class _CartScreenState extends State<CartScreen> {
                 children: [
                   _buildPageTitle(),
                   const SizedBox(height: 32),
-                  _buildCartItem(
-                    title: 'PAKET PUTUS CINTA',
-                    description:
-                        'Nasi, Ayam Geprek Level 10, es teh tawar (setawar janji manisnya).',
-                    price: 'Rp 35.000',
-                    imageUrl:
-                        'https://lh3.googleusercontent.com/aida-public/AB6AXuAQlECNkx7RNngoCbuwG-Bg3ZLioCC8OqT1VrLvubA54yEfPk9u3pa1djiCcPss3tT53wyVM-f05AHaHtsuaTtxvOIzRvvcKLgezZvdUd2aRE1LQF_5sXJc5g_VBI8DHR-wNhGzTBW87Tl6tW9p5N_FnjBqlJklzSYzaycEafB4L1dgp6YJZoDnWbHGvwVb7uDaKdv1nL91fXAWlsGIiRNJ5PO9BH1kBlD0ITN-ca2xGNVF0QKkHy-vwM5tsmwNmkiXFxuTY5cCmUw',
-                    tags: [
-                      _buildTag('EXTREME SPICY', AppColors.error),
-                      _buildTag('LEVEL 10', AppColors.primary),
-                    ],
+                  Consumer<CartProvider>(
+                    builder: (context, cart, child) {
+                      if (cart.itemCount == 0) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: Text(
+                              'KERANJANG KOSONG.\nSEPERTI HATIMU.',
+                              style: AppTypography.headlineMd.copyWith(color: AppColors.secondary),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        );
+                      }
+
+                      final cartItems = cart.items.values.toList();
+                      return Column(
+                        children: [
+                          ...cartItems.map((item) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: _buildCartItem(
+                                cartItem: item,
+                                cart: cart,
+                              ),
+                            );
+                          }),
+                          const SizedBox(height: 32),
+                          
+                          // Input Catatan & Alamat
+                          BrutalTextField(
+                            controller: _notesController,
+                            label: 'CATATAN PESANAN (OPSIONAL)',
+                            placeholder: 'Cth: Jangan terlalu pedas, aku sudah sering disakiti',
+                            maxLines: 2,
+                          ),
+                          const SizedBox(height: 16),
+                          
+                          // Address Selector
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'ALAMAT PENGIRIMAN',
+                                style: AppTypography.labelMono.copyWith(fontSize: 14),
+                              ),
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: () async {
+                                  final selected = await Navigator.push<AddressModel>(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const AddressScreen(isSelectionMode: true),
+                                    ),
+                                  );
+                                  if (selected != null) {
+                                    setState(() {
+                                      _selectedAddress = selected;
+                                    });
+                                  }
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surfaceContainerLowest,
+                                    border: Border.all(color: AppColors.primary, width: 4),
+                                    boxShadow: AppThemeConstants.brutalShadow,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              _selectedAddress?.title ?? 'PILIH ALAMAT',
+                                              style: AppTypography.headlineMd.copyWith(fontSize: 18),
+                                            ),
+                                            if (_selectedAddress != null) ...[
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                _selectedAddress!.address,
+                                                style: AppTypography.bodyMd,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                      const Icon(Icons.arrow_forward_ios, color: AppColors.primary),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 32),
+                          _buildWarningSection(),
+                          const SizedBox(height: 48),
+                          _buildSummarySection(cart),
+                        ],
+                      );
+                    },
                   ),
-                  const SizedBox(height: 24),
-                  _buildCartItem(
-                    title: 'AYAM DEPRESI AKUT',
-                    description:
-                        'Hanya ayam tanpa harapan, dibalut cabai yang lebih pedas dari omongan tetangga.',
-                    price: 'Rp 28.000',
-                    imageUrl:
-                        'https://lh3.googleusercontent.com/aida-public/AB6AXuByhkYGsmY5uSDUKBQOm7CeVVzUHHZdlrWTASw1tNBBBdNJ_Q-YSKF7PK8XFl8Z37Lhjllx1Jv9xVvH9jmmfz1N1UpSmdZDHxX3AM7jgzCpE7zwAaCA7V-6Q3knELBW3nKIou1KJK1k4WBWvE8vcvbFqgj69QQQm2iwqCcBRxwG-ZXMf0SwSe5McXH3hATkD4ermaS-ZHZSSIAMs_qH_L8326NRQVKq44Crr_muw-NVdNMwdWXPdUUNZpTS32teurEL5ycDHX30p-s',
-                    tags: [_buildTag('DANGER', AppColors.error)],
-                  ),
-                  const SizedBox(height: 32),
-                  _buildWarningSection(),
-                  const SizedBox(height: 48),
-                  _buildSummarySection(),
                   const SizedBox(height: 96),
                 ],
               ),
@@ -118,22 +215,27 @@ class _CartScreenState extends State<CartScreen> {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: AppColors.error,
-                        border: Border.all(color: AppColors.primary, width: 2),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '3', // Match global state design
-                          style: AppTypography.labelMonoSmall.copyWith(
-                            color: AppColors.onError,
-                            fontSize: 8,
+                    child: Consumer<CartProvider>(
+                      builder: (context, cart, child) {
+                        if (cart.itemCount == 0) return const SizedBox.shrink();
+                        return Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: AppColors.error,
+                            border: Border.all(color: AppColors.primary, width: 2),
                           ),
-                        ),
-                      ),
+                          child: Center(
+                            child: Text(
+                              '${cart.itemCount}',
+                              style: AppTypography.labelMonoSmall.copyWith(
+                                color: AppColors.onError,
+                                fontSize: 8,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -195,12 +297,11 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildCartItem({
-    required String title,
-    required String description,
-    required String price,
-    required String imageUrl,
-    required List<Widget> tags,
+    required CartItem cartItem,
+    required CartProvider cart,
   }) {
+    final menu = cartItem.menuItem;
+    final formatCurrency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -222,10 +323,10 @@ class _CartScreenState extends State<CartScreen> {
                   border: Border.all(color: AppColors.primary, width: 4),
                 ),
                 child: BrutalCachedImage(
-                  imageUrl: imageUrl,
+                  imageUrl: menu.imageUrl,
                   fit: BoxFit.cover,
                   memCacheWidth: 300,
-                  grayscale: true,
+                  grayscale: menu.isGrayscale,
                 ),
               ),
               const SizedBox(width: 16),
@@ -239,14 +340,16 @@ class _CartScreenState extends State<CartScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            title,
+                            menu.title.toUpperCase(),
                             style: AppTypography.headlineMd.copyWith(
                               fontSize: 20,
                             ),
                           ),
                         ),
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            cart.removeItem(menu.id);
+                          },
                           icon: const Icon(
                             Icons.delete,
                             color: AppColors.error,
@@ -258,7 +361,7 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      description,
+                      menu.description,
                       style: AppTypography.bodyMd.copyWith(
                         color: AppColors.secondary,
                         fontStyle: FontStyle.italic,
@@ -266,7 +369,16 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Wrap(spacing: 8, runSpacing: 8, children: tags),
+                    Wrap(
+                      spacing: 8, 
+                      runSpacing: 8, 
+                      children: [
+                        if (menu.spicyLevel > 0)
+                          _buildTag('LEVEL ${menu.spicyLevel}', AppColors.primary),
+                        if (menu.tag != null && menu.tag!.isNotEmpty)
+                          _buildTag(menu.tag!, AppColors.error),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -277,7 +389,7 @@ class _CartScreenState extends State<CartScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                price,
+                formatCurrency.format(cartItem.totalPrice),
                 style: AppTypography.headlineMd.copyWith(fontSize: 24),
               ),
               Container(
@@ -287,7 +399,9 @@ class _CartScreenState extends State<CartScreen> {
                 child: Row(
                   children: [
                     InkWell(
-                      onTap: () {},
+                      onTap: () {
+                        cart.decrementItem(menu.id);
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -316,10 +430,12 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ),
                       ),
-                      child: Text('1', style: AppTypography.labelMono),
+                      child: Text('${cartItem.quantity}', style: AppTypography.labelMono),
                     ),
                     InkWell(
-                      onTap: () {},
+                      onTap: () {
+                        cart.addItem(menu);
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -378,7 +494,10 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildSummarySection() {
+  Widget _buildSummarySection(CartProvider cart) {
+    final formatCurrency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final total = cart.totalAmount;
+
     return Column(
       children: [
         Container(
@@ -407,11 +526,7 @@ class _CartScreenState extends State<CartScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              _buildSummaryRow('HARGA DASAR', 'Rp 63.000'),
-              const SizedBox(height: 16),
-              _buildSummaryRow('BIAYA PENYESALAN', 'Rp 5.000', isError: true),
-              const SizedBox(height: 16),
-              _buildSummaryRow('ONGKIR JAUH', 'Rp 12.000'),
+              _buildSummaryRow('HARGA DASAR', formatCurrency.format(total)),
               const SizedBox(height: 24),
               Container(height: 2, color: AppColors.primary),
               const SizedBox(height: 16),
@@ -423,21 +538,15 @@ class _CartScreenState extends State<CartScreen> {
                     style: AppTypography.headlineMd.copyWith(fontSize: 24),
                   ),
                   Text(
-                    'Rp 80.000',
+                    formatCurrency.format(total),
                     style: AppTypography.headlineMd.copyWith(fontSize: 24),
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
               BrutalButton(
-                text: 'BAYAR SEKARANG',
+                text: 'LANJUT PEMBAYARAN',
                 isPrimary: true,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const OtpScreen()),
-                  );
-                },
+                onPressed: () => _handleCheckout(cart),
               ),
               const SizedBox(height: 16),
               Center(
@@ -530,6 +639,27 @@ class _CartScreenState extends State<CartScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  void _handleCheckout(CartProvider cart) {
+    if (_selectedAddress == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Alamat pengiriman wajib dipilih!')),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentScreen(
+          cartItems: cart.items.values.toList(),
+          totalAmount: cart.totalAmount,
+          orderNotes: _notesController.text.trim(),
+          deliveryAddress: '${_selectedAddress!.title}\n${_selectedAddress!.address}',
+        ),
+      ),
     );
   }
 }

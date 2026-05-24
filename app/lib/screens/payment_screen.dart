@@ -4,17 +4,38 @@ import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
 import 'cart_screen.dart';
-import 'otp_screen.dart'; // for HatchedPatternPainter
+import 'package:provider/provider.dart';
+import '../providers/cart_provider.dart';
+import '../services/order_service.dart';
+import '../services/payment_service.dart';
+import '../models/payment_method_model.dart';
+import '../models/cart_item.dart';
+import 'package:intl/intl.dart';
+import 'otp_screen.dart'; // For HatchedPatternPainter
 
 class PaymentScreen extends StatefulWidget {
-  const PaymentScreen({super.key});
+  final List<CartItem>? cartItems;
+  final num? totalAmount;
+  final String? orderNotes;
+  final String? deliveryAddress;
+  final bool isManagementMode;
+
+  const PaymentScreen({
+    super.key,
+    this.cartItems,
+    this.totalAmount,
+    this.orderNotes,
+    this.deliveryAddress,
+    this.isManagementMode = false,
+  });
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  String _selectedPaymentMethod = 'cash';
+  String? _selectedPaymentMethodId;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -27,48 +48,65 @@ class _PaymentScreenState extends State<PaymentScreen> {
             Expanded(
               child: Stack(
                 children: [
-                  ListView(
-                    padding: const EdgeInsets.only(
-                      left: AppThemeConstants.marginMobile,
-                      right: AppThemeConstants.marginMobile,
-                      top: 32,
-                      bottom: 120, // space for bottom action
-                    ),
-                    children: [
-                      _buildHeader(),
-                      const SizedBox(height: 40),
-                      _buildPaymentOption(
-                        id: 'cash',
-                        title: 'DUIT PANAS (CASH)',
-                        subtitle: 'BAYAR LANGSUNG DI TEMPAT KEJADIAN',
-                        icon: Icons.payments,
-                      ),
-                      const SizedBox(height: 24),
-                      _buildPaymentOption(
-                        id: 'wallet',
-                        title: 'SIKSA DIGITAL (E-WALLET)',
-                        subtitle: 'QRIS, GOPAY, OVO, DAN LAIN-LAIN',
-                        icon: Icons.account_balance_wallet,
-                      ),
-                      const SizedBox(height: 24),
-                      _buildPaymentOption(
-                        id: 'bank',
-                        title: 'TRANSFER PENYESALAN (BANK)',
-                        subtitle: 'VIRTUAL ACCOUNT SEMUA BANK',
-                        icon: Icons.account_balance,
-                      ),
-                      const SizedBox(height: 48),
-                      _buildOrderSummary(),
-                      const SizedBox(height: 24),
-                      Text(
-                        'DENGAN MENGEKLIK KONFIRMASI, ANDA SETUJU BAHWA RASA PEDAS INI ADALAH PILIHAN HIDUP ANDA SENDIRI DAN KAMI TIDAK BERTANGGUNG JAWAB ATAS GEJALA FISIK MAUPUN SPIRITUAL YANG MUNGKIN TIMBUL.',
-                        style: AppTypography.labelMonoSmall.copyWith(
-                          color: AppColors.outline,
-                          fontSize: 10,
+                  StreamBuilder<List<PaymentMethodModel>>(
+                    stream: PaymentService().getPaymentMethodsStream(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                      }
+                      
+                      final methods = snapshot.data ?? [];
+                      
+                      // Auto-select first if none selected
+                      if (_selectedPaymentMethodId == null && methods.isNotEmpty) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) setState(() => _selectedPaymentMethodId = methods.first.id);
+                        });
+                      }
+
+                      return ListView(
+                        padding: EdgeInsets.only(
+                          left: AppThemeConstants.marginMobile,
+                          right: AppThemeConstants.marginMobile,
+                          top: 24,
+                          bottom: widget.isManagementMode ? 24 : 120, // Space for bottom action if not management mode
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                        children: [
+                          _buildSectionTitle('PILIH JALAN KESENGSARAAN'),
+                          const SizedBox(height: 16),
+                          ...methods.map((method) {
+                            IconData icon = Icons.payments;
+                            if (method.type == 'qris' || method.type == 'ewallet') icon = Icons.qr_code;
+                            if (method.type == 'bank') icon = Icons.account_balance;
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: _buildPaymentOption(
+                                id: method.id,
+                                title: method.name,
+                                subtitle: method.type.toUpperCase(),
+                                icon: icon,
+                              ),
+                            );
+                          }),
+                          if (!widget.isManagementMode) ...[
+                            const SizedBox(height: 32),
+                            _buildSectionTitle('RINGKASAN DOSA'),
+                            const SizedBox(height: 16),
+                            _buildOrderSummary(),
+                            const SizedBox(height: 24),
+                            Text(
+                              'DENGAN MENGEKLIK KONFIRMASI, ANDA SETUJU BAHWA RASA PEDAS INI ADALAH PILIHAN HIDUP ANDA SENDIRI DAN KAMI TIDAK BERTANGGUNG JAWAB ATAS GEJALA FISIK MAUPUN SPIRITUAL YANG MUNGKIN TIMBUL.',
+                              style: AppTypography.labelMonoSmall.copyWith(
+                                color: AppColors.outline,
+                                fontSize: 10,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ],
+                      );
+                    }
                   ),
                   // Background decoration text
                   Positioned(
@@ -186,24 +224,24 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'METODE\nPEMBAYARAN',
-          style: AppTypography.headlineMd.copyWith(fontSize: 36, height: 1.0),
-        ),
-        const SizedBox(height: 8),
-        Container(height: 4, width: 96, color: AppColors.primary),
-        const SizedBox(height: 24),
-        Text(
-          'PILIH CARA ANDA MEMBAYAR DOSA INI',
-          style: AppTypography.labelMono.copyWith(
-            color: AppColors.onSurfaceVariant,
+  Widget _buildSectionTitle(String title) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.primary,
+            width: 4,
           ),
         ),
-      ],
+      ),
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        title,
+        style: AppTypography.headlineLg.copyWith(
+          fontSize: 24,
+          color: AppColors.primary,
+        ),
+      ),
     );
   }
 
@@ -213,12 +251,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
     required String subtitle,
     required IconData icon,
   }) {
-    final isSelected = _selectedPaymentMethod == id;
+    final isSelected = _selectedPaymentMethodId == id;
 
     return GestureDetector(
       onTap: () {
         setState(() {
-          _selectedPaymentMethod = id;
+          _selectedPaymentMethodId = id;
         });
       },
       child: Container(
@@ -308,6 +346,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Widget _buildOrderSummary() {
+    final formatCurrency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -347,15 +387,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildSummaryRow('AYAM DEPRESI LV. 5', 'RP 25.000'),
-              const SizedBox(height: 8),
-              _buildSummaryRow('NASI PUTIH POLOS', 'RP 5.000'),
-              const SizedBox(height: 8),
-              _buildSummaryRow(
-                'ONGKOS PENDERITAAN',
-                'RP 10.000',
-                isError: true,
-              ),
+              ...(widget.cartItems ?? []).map((item) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _buildSummaryRow('${item.quantity}x ${item.menuItem.title}', formatCurrency.format(item.totalPrice)),
+                );
+              }),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.only(top: 16),
@@ -365,7 +402,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       color: AppColors.primary,
                       width: 4,
                       style: BorderStyle.solid,
-                    ), // Flutter doesn't easily support dashed borders natively without a package, using solid for now
+                    ),
                   ),
                 ),
                 child: Row(
@@ -376,7 +413,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       style: AppTypography.headlineMd.copyWith(fontSize: 20),
                     ),
                     Text(
-                      'Rp 40.000',
+                      formatCurrency.format(widget.totalAmount),
                       style: AppTypography.headlineMd.copyWith(fontSize: 32),
                     ),
                   ],
@@ -423,20 +460,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
           border: Border(top: BorderSide(color: AppColors.primary, width: 4)),
         ),
         child: InkWell(
-          onTap: () {
-            // Show alert or handle payment
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Pesanan Diterima. Selamat Menikmati Penderitaan.',
-                ),
-              ),
-            );
-          },
+          onTap: _isLoading ? null : _handlePaymentConfirmation,
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
             decoration: BoxDecoration(
-              color: const Color(0xFFBA1A1A), // accent-red
+              color: _isLoading ? AppColors.outline : const Color(0xFFBA1A1A), // accent-red
               border: Border.all(color: AppColors.primary, width: 4),
               boxShadow: const [
                 BoxShadow(color: AppColors.primary, offset: Offset(4, 4)),
@@ -461,5 +489,45 @@ class _PaymentScreenState extends State<PaymentScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _handlePaymentConfirmation() async {
+    if (_selectedPaymentMethodId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pilih metode pembayaran terlebih dahulu!')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await OrderService().placeOrder(
+        cartItems: widget.cartItems ?? [],
+        totalAmount: widget.totalAmount ?? 0,
+        orderNotes: widget.orderNotes ?? '',
+        deliveryAddress: widget.deliveryAddress ?? '',
+      );
+
+      // Clear cart
+      if (mounted) {
+        Provider.of<CartProvider>(context, listen: false).clearCart();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pesanan berhasil dibuat! Rasa sakit segera dikirim.')),
+        );
+        
+        // Go back to Home
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal membuat pesanan: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 }

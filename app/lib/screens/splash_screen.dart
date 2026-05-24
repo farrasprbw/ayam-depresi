@@ -5,6 +5,8 @@ import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
 import 'login_screen.dart';
+import 'home_screen.dart';
+import '../services/auth_service.dart';
 
 /// Splash Screen — The "Bridging Screen"
 /// Features a pulsing logo, bouncing loading dots, and brutalist decorative elements.
@@ -43,18 +45,23 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _slideAnimation = Tween<double>(begin: 0, end: -1).animate(
-      CurvedAnimation(parent: _slideController, curve: Curves.easeIn),
-    );
+    _slideAnimation = Tween<double>(
+      begin: 0,
+      end: -1,
+    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeIn));
 
-    // 3-second delay before sliding up and navigating to LoginScreen
+    // 3-second delay before sliding up and navigating
     Timer(const Duration(seconds: 3), () async {
       await _slideController.forward();
       if (!mounted) return;
+
+      final authService = AuthService();
+      final isLoggedIn = authService.currentUser != null;
+
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              const LoginScreen(),
+              isLoggedIn ? const HomeScreen() : const LoginScreen(),
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
         ),
@@ -95,10 +102,7 @@ class _SplashScreenState extends State<SplashScreen>
                       builder: (context, child) {
                         // Pulse scaling from 0.95 to 1.05
                         final scale = 0.95 + (_pulseController.value * 0.1);
-                        return Transform.scale(
-                          scale: scale,
-                          child: child,
-                        );
+                        return Transform.scale(scale: scale, child: child);
                       },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -147,10 +151,7 @@ class _SplashScreenState extends State<SplashScreen>
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: Image.asset(
-            'assets/images/logo.webp',
-            fit: BoxFit.contain,
-          ),
+          child: Image.asset('assets/images/logo.webp', fit: BoxFit.contain),
         ),
       ),
     );
@@ -224,10 +225,7 @@ class _SplashScreenState extends State<SplashScreen>
         // Only bounce up (negative dy)
         final actualDy = dy < 0 ? dy : 0.0;
 
-        return Transform.translate(
-          offset: Offset(0, actualDy),
-          child: child,
-        );
+        return Transform.translate(offset: Offset(0, actualDy), child: child);
       },
       child: Container(
         width: 16,
@@ -262,7 +260,9 @@ class _SplashScreenState extends State<SplashScreen>
             angle: -12 * pi / 180,
             child: Text(
               '#PEDAS',
-              style: AppTypography.display.copyWith(color: AppColors.error.withValues(alpha: 0.2)),
+              style: AppTypography.display.copyWith(
+                color: AppColors.error.withValues(alpha: 0.2),
+              ),
             ),
           ),
         ),
@@ -286,11 +286,7 @@ class _SplashScreenState extends State<SplashScreen>
           right: 20,
           child: Transform.rotate(
             angle: 45 * pi / 180,
-            child: Container(
-              width: 64,
-              height: 4,
-              color: AppColors.error,
-            ),
+            child: Container(width: 64, height: 4, color: AppColors.error),
           ),
         ),
         // Left circle

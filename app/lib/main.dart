@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'screens/splash_screen.dart';
 import 'theme/app_colors.dart';
+import 'package:provider/provider.dart';
+import 'providers/cart_provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // Force portrait orientation
   SystemChrome.setPreferredOrientations([
@@ -22,7 +30,14 @@ void main() {
     ),
   );
 
-  runApp(const AyamDepresiApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+      ],
+      child: const AyamDepresiApp(),
+    ),
+  );
 }
 
 class AyamDepresiApp extends StatelessWidget {
