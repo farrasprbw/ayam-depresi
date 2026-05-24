@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/menu_item.dart';
+import '../models/topping_model.dart';
 
 class MenuService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -33,6 +34,24 @@ class MenuService {
       return snapshot.docs
           .map((doc) => MenuItem.fromMap(doc.data(), doc.id))
           .toList();
+    });
+  }
+
+  /// Get all toppings
+  Stream<List<Topping>> getToppings() {
+    return _db.collection('Toppings').snapshots().map((snapshot) {
+      return snapshot.docs
+          .map((doc) => Topping.fromMap(doc.data(), doc.id))
+          .toList();
+    });
+  }
+
+  /// Get all categories
+  Stream<List<String>> getCategories() {
+    return _db.collection('Categories').orderBy('order').snapshots().map((
+      snapshot,
+    ) {
+      return snapshot.docs.map((doc) => doc.data()['name'] as String).toList();
     });
   }
 }

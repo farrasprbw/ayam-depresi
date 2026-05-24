@@ -15,11 +15,18 @@ class CartItem {
 
   Map<String, dynamic> toMap() {
     return {
-      'menuId': menuItem.id,
-      'title': menuItem.title,
-      'price': menuItem.price,
+      'menuItem': menuItem.toMap(),
+      'menuId': menuItem.id, // Stored to reconstruct MenuItem using fromMap
       'quantity': quantity,
       'notes': notes,
     };
+  }
+
+  factory CartItem.fromMap(Map<String, dynamic> map) {
+    return CartItem(
+      menuItem: MenuItem.fromMap(map['menuItem'], map['menuId']),
+      quantity: map['quantity'] ?? 1,
+      notes: map['notes'] ?? '',
+    );
   }
 }

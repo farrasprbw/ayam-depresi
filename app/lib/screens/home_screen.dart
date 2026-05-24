@@ -223,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const MenuDetailScreen()),
+                        MaterialPageRoute(builder: (context) => MenuDetailScreen(menu: flashSaleItems.first)),
                       );
                     },
                   ),
@@ -398,7 +398,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 GestureDetector(
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const MenuDetailScreen()),
+                    MaterialPageRoute(builder: (context) => MenuDetailScreen(menu: mainFeatured)),
                   ),
                   child: Container(
                     decoration: BoxDecoration(
@@ -539,7 +539,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: !menu.isSoldOut
           ? () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const MenuDetailScreen()),
+              MaterialPageRoute(builder: (context) => MenuDetailScreen(menu: menu)),
             )
           : null,
       child: Container(

@@ -8,10 +8,16 @@ import '../widgets/brutal_cached_image.dart';
 import '../widgets/brutal_text_field.dart';
 import 'cart_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../providers/cart_provider.dart';
+import '../models/menu_item.dart';
+import '../models/topping_model.dart';
+import '../services/menu_service.dart';
 
 class MenuDetailScreen extends StatefulWidget {
-  const MenuDetailScreen({super.key});
+  final MenuItem menu;
+
+  const MenuDetailScreen({super.key, required this.menu});
 
   @override
   State<MenuDetailScreen> createState() => _MenuDetailScreenState();
@@ -19,10 +25,7 @@ class MenuDetailScreen extends StatefulWidget {
 
 class _MenuDetailScreenState extends State<MenuDetailScreen> {
   double _spiceLevel = 1;
-  final Map<String, bool> _toppings = {
-    'Telur Dadar Judes': false,
-    'Tahu Goreng Kering': false,
-  };
+  final Map<String, Topping> _selectedToppings = {};
   final TextEditingController _notesController = TextEditingController();
 
   @override
@@ -54,11 +57,14 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildTitleAndDescription(),
-                            const SizedBox(height: 32),
-                            _buildSpiceLevelSlider(),
-                            const SizedBox(height: 32),
-                            _buildToppings(),
-                            const SizedBox(height: 32),
+                            if (widget.menu.spicyLevel > 0) ...[
+                              _buildSpiceLevelSlider(),
+                              const SizedBox(height: 32),
+                            ],
+                            if (widget.menu.category != 'MINUMAN') ...[
+                              _buildToppings(),
+                              const SizedBox(height: 32),
+                            ],
                             BrutalTextField(
                               label: 'CATATAN UNTUK PENJUAL',
                               placeholder:
@@ -203,11 +209,10 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
           fit: StackFit.expand,
           children: [
             BrutalCachedImage(
-              imageUrl:
-                  'https://lh3.googleusercontent.com/aida-public/AB6AXuCw4FW_xrUcUy_RbcmbJFnxJbmteucBxnIDCrtQG5MldX_g89FjqXdufRhi1LjBIxfcQIKu72E12RYfM-pLMMJOY8lKFuK2mpBs6_oY-7OSe2GhSd1-Nu_EnrugVXjiR0AQW3d5wXujgGhuL_647gpdidVU6jl0g2EHU_kmXnquGwr73L_Za7xwFedfJOagGJO11gEur2z3czzFfuwTlV3jlbXK7hav_r6NYF6fWCo033vIh35NSx9rjxWhE1CGLPbkt80uelHrOKM',
+              imageUrl: widget.menu.imageUrl,
               fit: BoxFit.cover,
               memCacheWidth: 600,
-              grayscale: true,
+              grayscale: widget.menu.isGrayscale,
             ),
             // Dark vignette/gradient overlay
             Container(
@@ -244,12 +249,39 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
     );
   }
 
+  String get dynamicTitle {
+    if (widget.menu.category != 'PAKET GEPREK' || widget.menu.spicyLevel == 0) {
+      if (widget.menu.spicyLevel > 0) {
+        return '${widget.menu.title} (Level $_spiceLevel)';
+      }
+      return widget.menu.title;
+    }
+    switch (_spiceLevel.toInt()) {
+      case 1: return 'Geprek Pemula';
+      case 2: return 'Geprek Patah Hati';
+      case 3: return 'Geprek Depresi';
+      case 4: return 'Geprek Bunuh Diri';
+      default: return widget.menu.title;
+    }
+  }
+
+  String get dynamicDescription {
+    if (widget.menu.category != 'PAKET GEPREK' || widget.menu.spicyLevel == 0) return widget.menu.description;
+    switch (_spiceLevel.toInt()) {
+      case 1: return 'Pedas malu-malu, cocok buat kamu yang masih belajar menahan luka.';
+      case 2: return 'Pedasnya mulai terasa, seperti ditinggal pas lagi sayang-sayangnya.';
+      case 3: return 'Sangat pedas, air mata mulai menetes tak terkendali.';
+      case 4: return 'Pedas brutal, jangan coba-coba kalau mental tidak kuat!';
+      default: return widget.menu.description;
+    }
+  }
+
   Widget _buildTitleAndDescription() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'AYAM DEPRESI\nAKUT',
+          dynamicTitle.toUpperCase(),
           style: AppTypography.headlineLgMobile.copyWith(
             height: 1.1,
             color: AppColors.primary,
@@ -257,12 +289,12 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Rp 28.000',
+          NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(widget.menu.price),
           style: AppTypography.bodyLg.copyWith(color: AppColors.error),
         ),
         const SizedBox(height: 16),
         Text(
-          'Ayam geprek krispi yang dihancurkan tanpa ampun, dilumuri sambal bawang ulekan ekstra pedas yang bikin merenung. Disajikan dengan nasi putih panas.',
+          dynamicDescription,
           style: AppTypography.bodyMd.copyWith(
             color: AppColors.onSurfaceVariant,
             height: 1.6,
@@ -366,51 +398,52 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
   }
 
   Widget _buildToppings() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
+    return StreamBuilder<List<Topping>>(
+      stream: MenuService().getToppings(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final toppings = snapshot.data!;
+
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'TOPPING TAMBAHAN',
-              style: AppTypography.labelMono.copyWith(fontSize: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'TOPPING TAMBAHAN',
+                  style: AppTypography.labelMono.copyWith(fontSize: 16),
+                ),
+                const SizedBox(height: 4),
+                Container(height: 4, width: 200, color: AppColors.primary),
+              ],
             ),
-            const SizedBox(height: 4),
-            Container(height: 4, width: 200, color: AppColors.primary),
+            const SizedBox(height: 16),
+            ...toppings.map((topping) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildToppingItem(
+                  title: topping.title,
+                  price: '+ ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(topping.price)}',
+                  isChecked: _selectedToppings.containsKey(topping.id),
+                  onChanged: (val) {
+                    setState(() {
+                      if (val == true) {
+                        _selectedToppings[topping.id] = topping;
+                      } else {
+                        _selectedToppings.remove(topping.id);
+                      }
+                    });
+                  },
+                ),
+              );
+            }),
           ],
-        ),
-        const SizedBox(height: 16),
-        _buildToppingItem(
-          title: 'Telur Dadar Judes',
-          price: '+ Rp 5.000',
-          isChecked: _toppings['Telur Dadar Judes']!,
-          onChanged: (val) {
-            setState(() {
-              _toppings['Telur Dadar Judes'] = val ?? false;
-            });
-          },
-        ),
-        const SizedBox(height: 12),
-        _buildToppingItem(
-          title: 'Tahu Goreng Kering',
-          price: '+ Rp 3.000',
-          isChecked: _toppings['Tahu Goreng Kering']!,
-          onChanged: (val) {
-            setState(() {
-              _toppings['Tahu Goreng Kering'] = val ?? false;
-            });
-          },
-        ),
-        const SizedBox(height: 12),
-        _buildToppingItem(
-          title: 'Keju Mozarella Leleh',
-          price: '+ Rp 6.000',
-          isChecked: false,
-          isSoldOut: true,
-          onChanged: null,
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -527,7 +560,7 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                   ),
                 ),
                 Text(
-                  'Rp 28.000',
+                  NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(_calculateTotalPrice()),
                   style: AppTypography.bodyLg.copyWith(color: AppColors.error),
                 ),
               ],
@@ -536,12 +569,47 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
               text: 'TAMBAH',
               icon: Icons.shopping_cart,
               isPrimary: true,
-              onPressed: () => Navigator.pop(context), // Mock returning to home
+              onPressed: () {
+                final itemToAdd = MenuItem(
+                  id: widget.menu.id,
+                  title: dynamicTitle,
+                  description: dynamicDescription,
+                  price: _calculateTotalPrice(),
+                  spicyLevel: _spiceLevel.toInt(),
+                  imageUrl: widget.menu.imageUrl,
+                  category: widget.menu.category,
+                  tag: widget.menu.tag,
+                );
+                
+                String finalNotes = '';
+                final selectedToppings = _selectedToppings.values.map((e) => e.title).toList();
+                
+                if (selectedToppings.isNotEmpty) {
+                  finalNotes += 'Topping: ${selectedToppings.join(", ")}. ';
+                }
+                if (_notesController.text.isNotEmpty) {
+                  finalNotes += 'Catatan: ${_notesController.text}';
+                }
+
+                context.read<CartProvider>().addItem(itemToAdd, notes: finalNotes.trim());
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('$dynamicTitle ditambah ke keranjang.')),
+                );
+              },
             ),
           ],
         ),
       ),
     );
+  }
+  num _calculateTotalPrice() {
+    num total = widget.menu.price;
+    if (widget.menu.category == 'PAKET GEPREK' || widget.menu.category == 'ALA CARTE') {
+      for (final topping in _selectedToppings.values) {
+        total += topping.price;
+      }
+    }
+    return total;
   }
 }
 

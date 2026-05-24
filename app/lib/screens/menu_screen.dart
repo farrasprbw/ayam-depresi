@@ -22,36 +22,45 @@ class MenuScreenContent extends StatefulWidget {
 
 class _MenuScreenContentState extends State<MenuScreenContent> {
   int _selectedCategoryIndex = 0;
-  final List<String> _categories = [
-    'PAKET GEPREK',
-    'ALA CARTE',
-    'MINUMAN',
-    'TAMBAHAN',
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _buildTopAppBar(context),
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppThemeConstants.marginMobile,
-              vertical: 24,
+    return StreamBuilder<List<String>>(
+      stream: MenuService().getCategories(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+        }
+
+        final categories = snapshot.data!;
+        
+        // Ensure index is valid after fetching
+        if (_selectedCategoryIndex >= categories.length) {
+          _selectedCategoryIndex = 0;
+        }
+
+        return Column(
+          children: [
+            _buildTopAppBar(context),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppThemeConstants.marginMobile,
+                  vertical: 24,
+                ),
+                children: [
+                  _buildSearchBar(),
+                  const SizedBox(height: 32),
+                  _buildCategoryTabs(categories),
+                  const SizedBox(height: 32),
+                  _buildMenuSection(categories),
+                  const SizedBox(height: 64),
+                  _buildFooter(),
+                ],
+              ),
             ),
-            children: [
-              _buildSearchBar(),
-              const SizedBox(height: 32),
-              _buildCategoryTabs(),
-              const SizedBox(height: 32),
-              _buildMenuSection(),
-              const SizedBox(height: 64),
-              _buildFooter(),
-            ],
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
@@ -189,12 +198,12 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
     );
   }
 
-  Widget _buildCategoryTabs() {
+  Widget _buildCategoryTabs(List<String> categories) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       clipBehavior: Clip.none,
       child: Row(
-        children: List.generate(_categories.length, (index) {
+        children: List.generate(categories.length, (index) {
           final isSelected = _selectedCategoryIndex == index;
           return Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -217,7 +226,7 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
                   boxShadow: isSelected ? AppThemeConstants.brutalShadow : null,
                 ),
                 child: Text(
-                  _categories[index],
+                  categories[index],
                   style: AppTypography.labelMono.copyWith(
                     color: isSelected ? AppColors.onPrimary : AppColors.primary,
                   ),
@@ -230,8 +239,8 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
     );
   }
 
-  Widget _buildMenuSection() {
-    final currentCategory = _categories[_selectedCategoryIndex];
+  Widget _buildMenuSection(List<String> categories) {
+    final currentCategory = categories[_selectedCategoryIndex];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,7 +314,7 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const MenuDetailScreen()),
+          MaterialPageRoute(builder: (context) => MenuDetailScreen(menu: menu)),
         );
       },
       child: Container(

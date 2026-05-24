@@ -57,54 +57,54 @@ class _CartScreenState extends State<CartScreen> {
                           child: Padding(
                             padding: const EdgeInsets.all(32.0),
                             child: Text(
-                              'KERANJANG KOSONG.\nSEPERTI HATIMU.',
-                              style: AppTypography.headlineMd.copyWith(color: AppColors.secondary),
+                              'KERANJANG KOSONG,\nSEPERTI HATIMU.',
+                              style: AppTypography.headlineMd.copyWith(
+                                color: AppColors.secondary,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ),
                         );
                       }
 
-                      final cartItems = cart.items.values.toList();
+                      final cartEntries = cart.items.entries.toList();
                       return Column(
                         children: [
-                          ...cartItems.map((item) {
+                          ...cartEntries.map((entry) {
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 24),
                               child: _buildCartItem(
-                                cartItem: item,
+                                itemKey: entry.key,
+                                cartItem: entry.value,
                                 cart: cart,
                               ),
                             );
                           }),
                           const SizedBox(height: 32),
-                          
-                          // Input Catatan & Alamat
-                          BrutalTextField(
-                            controller: _notesController,
-                            label: 'CATATAN PESANAN (OPSIONAL)',
-                            placeholder: 'Cth: Jangan terlalu pedas, aku sudah sering disakiti',
-                            maxLines: 2,
-                          ),
-                          const SizedBox(height: 16),
-                          
+
                           // Address Selector
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'ALAMAT PENGIRIMAN',
-                                style: AppTypography.labelMono.copyWith(fontSize: 14),
+                                style: AppTypography.labelMono.copyWith(
+                                  fontSize: 14,
+                                ),
                               ),
                               const SizedBox(height: 8),
                               InkWell(
                                 onTap: () async {
-                                  final selected = await Navigator.push<AddressModel>(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const AddressScreen(isSelectionMode: true),
-                                    ),
-                                  );
+                                  final selected =
+                                      await Navigator.push<AddressModel>(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const AddressScreen(
+                                                isSelectionMode: true,
+                                              ),
+                                        ),
+                                      );
                                   if (selected != null) {
                                     setState(() {
                                       _selectedAddress = selected;
@@ -116,18 +116,24 @@ class _CartScreenState extends State<CartScreen> {
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
                                     color: AppColors.surfaceContainerLowest,
-                                    border: Border.all(color: AppColors.primary, width: 4),
+                                    border: Border.all(
+                                      color: AppColors.primary,
+                                      width: 4,
+                                    ),
                                     boxShadow: AppThemeConstants.brutalShadow,
                                   ),
                                   child: Row(
                                     children: [
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              _selectedAddress?.title ?? 'PILIH ALAMAT',
-                                              style: AppTypography.headlineMd.copyWith(fontSize: 18),
+                                              _selectedAddress?.title ??
+                                                  'PILIH ALAMAT',
+                                              style: AppTypography.headlineMd
+                                                  .copyWith(fontSize: 18),
                                             ),
                                             if (_selectedAddress != null) ...[
                                               const SizedBox(height: 4),
@@ -141,12 +147,25 @@ class _CartScreenState extends State<CartScreen> {
                                           ],
                                         ),
                                       ),
-                                      const Icon(Icons.arrow_forward_ios, color: AppColors.primary),
+                                      const Icon(
+                                        Icons.arrow_forward_ios,
+                                        color: AppColors.primary,
+                                      ),
                                     ],
                                   ),
                                 ),
                               ),
                             ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Input Catatan
+                          BrutalTextField(
+                            controller: _notesController,
+                            label: 'CATATAN PESANAN (OPSIONAL)',
+                            placeholder:
+                                'Cth: Jangan terlalu pedas, aku sudah sering disakiti',
+                            maxLines: 2,
                           ),
 
                           const SizedBox(height: 32),
@@ -211,7 +230,10 @@ class _CartScreenState extends State<CartScreen> {
                 children: [
                   IconButton(
                     onPressed: () {}, // Already on Cart screen
-                    icon: const Icon(Icons.shopping_cart, color: AppColors.primary),
+                    icon: const Icon(
+                      Icons.shopping_cart,
+                      color: AppColors.primary,
+                    ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
@@ -226,7 +248,10 @@ class _CartScreenState extends State<CartScreen> {
                           height: 16,
                           decoration: BoxDecoration(
                             color: AppColors.error,
-                            border: Border.all(color: AppColors.primary, width: 2),
+                            border: Border.all(
+                              color: AppColors.primary,
+                              width: 2,
+                            ),
                           ),
                           child: Center(
                             child: Text(
@@ -300,11 +325,16 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildCartItem({
+    required String itemKey,
     required CartItem cartItem,
     required CartProvider cart,
   }) {
     final menu = cartItem.menuItem;
-    final formatCurrency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final formatCurrency = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -351,7 +381,7 @@ class _CartScreenState extends State<CartScreen> {
                         ),
                         IconButton(
                           onPressed: () {
-                            cart.removeItem(menu.id);
+                            cart.removeItem(itemKey);
                           },
                           icon: const Icon(
                             Icons.delete,
@@ -373,15 +403,27 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                     const SizedBox(height: 8),
                     Wrap(
-                      spacing: 8, 
-                      runSpacing: 8, 
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
                         if (menu.spicyLevel > 0)
-                          _buildTag('LEVEL ${menu.spicyLevel}', AppColors.primary),
+                          _buildTag(
+                            'LEVEL ${menu.spicyLevel}',
+                            AppColors.primary,
+                          ),
                         if (menu.tag != null && menu.tag!.isNotEmpty)
                           _buildTag(menu.tag!, AppColors.error),
                       ],
                     ),
+                    if (cartItem.notes.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        cartItem.notes,
+                        style: AppTypography.labelMonoSmall.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -403,7 +445,7 @@ class _CartScreenState extends State<CartScreen> {
                   children: [
                     InkWell(
                       onTap: () {
-                        cart.decrementItem(menu.id);
+                        cart.decrementItem(itemKey);
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -433,11 +475,14 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ),
                       ),
-                      child: Text('${cartItem.quantity}', style: AppTypography.labelMono),
+                      child: Text(
+                        '${cartItem.quantity}',
+                        style: AppTypography.labelMono,
+                      ),
                     ),
                     InkWell(
                       onTap: () {
-                        cart.addItem(menu);
+                        cart.addItem(menu, notes: cartItem.notes);
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -470,15 +515,17 @@ class _CartScreenState extends State<CartScreen> {
         _discountAmount = 10000.0;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Promo berhasil dipakai! Diskon Rp 10.000')),
+        const SnackBar(
+          content: Text('Promo berhasil dipakai! Diskon Rp 10.000'),
+        ),
       );
     } else {
       setState(() {
         _discountAmount = 0.0;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kode Promo tidak valid!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Kode Promo tidak valid!')));
     }
   }
 
@@ -518,10 +565,7 @@ class _CartScreenState extends State<CartScreen> {
           InkWell(
             onTap: _applyPromo,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               color: AppColors.primary,
               child: Text(
                 'CEK',
@@ -537,7 +581,11 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildSummarySection(CartProvider cart) {
-    final formatCurrency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final formatCurrency = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
     final total = cart.totalAmount;
     final finalTotal = (total - _discountAmount).clamp(0, double.infinity);
 
@@ -592,7 +640,9 @@ class _CartScreenState extends State<CartScreen> {
                     formatCurrency.format(finalTotal),
                     style: AppTypography.headlineMd.copyWith(
                       fontSize: 24,
-                      color: _discountAmount > 0 ? AppColors.error : AppColors.primary,
+                      color: _discountAmount > 0
+                          ? AppColors.error
+                          : AppColors.primary,
                     ),
                   ),
                 ],
@@ -652,10 +702,14 @@ class _CartScreenState extends State<CartScreen> {
       MaterialPageRoute(
         builder: (context) => PaymentScreen(
           cartItems: cart.items.values.toList(),
-          totalAmount: (cart.totalAmount - _discountAmount).clamp(0, double.infinity),
+          totalAmount: (cart.totalAmount - _discountAmount).clamp(
+            0,
+            double.infinity,
+          ),
           discountAmount: _discountAmount,
           orderNotes: _notesController.text.trim(),
-          deliveryAddress: '${_selectedAddress!.title}\n${_selectedAddress!.address}',
+          deliveryAddress:
+              '${_selectedAddress!.title}\n${_selectedAddress!.address}',
         ),
       ),
     );
