@@ -4,7 +4,6 @@ import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
-import '../widgets/brutal_cached_image.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -31,11 +30,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 children: [
                   // Decorative Hatch Pattern Background
                   Positioned.fill(
-                    child: CustomPaint(
-                      painter: HatchPatternPainter(),
-                    ),
+                    child: CustomPaint(painter: HatchPatternPainter()),
                   ),
-                  
+
                   // Decorative elements for desktop/tablet (hidden on mobile mostly, but let's add them)
                   Positioned(
                     top: -40,
@@ -48,7 +45,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           width: 256,
                           height: 256,
                           decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.primary, width: 8),
+                            border: Border.all(
+                              color: AppColors.primary,
+                              width: 8,
+                            ),
                           ),
                         ),
                       ),
@@ -66,7 +66,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           height: 192,
                           decoration: BoxDecoration(
                             color: AppColors.error,
-                            border: Border.all(color: AppColors.primary, width: 4),
+                            border: Border.all(
+                              color: AppColors.primary,
+                              width: 4,
+                            ),
                           ),
                         ),
                       ),
@@ -88,18 +91,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             margin: const EdgeInsets.only(bottom: 32),
                             decoration: BoxDecoration(
                               color: AppColors.error,
-                              border: Border.all(color: AppColors.primary, width: 4),
+                              border: Border.all(
+                                color: AppColors.primary,
+                                width: 4,
+                              ),
                               boxShadow: const [
                                 BoxShadow(
                                   color: AppColors.primary,
                                   offset: Offset(4, 4),
-                                )
+                                ),
                               ],
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
                             child: Text(
                               'WARNING: HIGH SODIUM & EXISTENTIAL CRISIS',
-                              style: AppTypography.labelMono.copyWith(color: AppColors.onPrimary),
+                              style: AppTypography.labelMono.copyWith(
+                                color: AppColors.onPrimary,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -131,21 +142,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       BoxShadow(
                                         color: AppColors.primary,
                                         offset: Offset(4, 4),
-                                      )
+                                      ),
                                     ],
                                   ),
-                                  child: BrutalCachedImage(
-                                    imageUrl: 'https://lh3.googleusercontent.com/aida/ADBb0uie6AY74EpvJLHRydiYREAjrRghlkTvURAaeyVSthBmBGJCSXgFJ1pQAzL91-r7XkFPJGSNJn8fFtOkHr98RIGi37Wtuvo3mSNPslxwSFS25v6ZNtAjnDE25Ybm6U74bI44kxFFXBH27VSg4R95Ymdjwm3KbuqAFCzbycNLv6Fu68iEz0qAwmxNjOJLBYKP0HnayhkNQy7zyxihncn6UmMYi62xAUJNl5R6QA4plwscMr0stzPvXX-DuA',
-                                    fit: BoxFit.cover,
-                                    memCacheWidth: 256,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Image.asset(
+                                      'assets/images/logo-no-bg.webp',
+                                      fit: BoxFit.contain,
+                                    ),
                                   ),
                                 ),
                               ),
-                              
+
                               // Header
                               Text(
                                 'DAFTAR BARU\n(TAMBAH BEBAN)',
-                                style: AppTypography.headlineMd.copyWith(fontSize: 28),
+                                style: AppTypography.headlineMd.copyWith(
+                                  fontSize: 28,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 8),
@@ -162,7 +177,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               // Fields
                               _buildUnderlineTextField(
                                 label: 'NAMA LENGKAP (SIAPA KAMU?)',
-                                hint: 'Nama yang akan kami panggil saat pesanan tiba...',
+                                hint:
+                                    'Nama yang akan kami panggil saat pesanan tiba...',
                               ),
                               const SizedBox(height: 24),
                               _buildUnderlineTextField(
@@ -188,7 +204,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 obscureText: !_isConfirmPasswordVisible,
                                 onToggleVisibility: () {
                                   setState(() {
-                                    _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                                    _isConfirmPasswordVisible =
+                                        !_isConfirmPasswordVisible;
                                   });
                                 },
                               ),
@@ -210,17 +227,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       },
                                       activeColor: AppColors.error,
                                       checkColor: AppColors.onPrimary,
-                                      side: const BorderSide(color: AppColors.primary, width: 3),
+                                      side: const BorderSide(
+                                        color: AppColors.primary,
+                                        width: 3,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
                                       'SAYA SETUJU UNTUK MENANGGUNG SEGALA RISIKO KEPEDASAN DAN PENYESALAN HIDUP YANG MUNGKIN TIMBUL.',
-                                      style: AppTypography.labelMonoSmall.copyWith(
-                                        fontSize: 12,
-                                        height: 1.2,
-                                      ),
+                                      style: AppTypography.labelMonoSmall
+                                          .copyWith(fontSize: 12, height: 1.2),
                                     ),
                                   ),
                                 ],
@@ -235,9 +253,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   Navigator.pop(context); // Go back to login
                                 },
                               ),
-                              
+
                               const SizedBox(height: 40),
-                              
+
                               // Login Link
                               GestureDetector(
                                 onTap: () => Navigator.pop(context),
@@ -252,9 +270,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ],
                           ),
                         ),
-                        
+
                         const SizedBox(height: 48),
-                        
+
                         // Footer
                         _buildFooter(),
                       ],
@@ -271,34 +289,55 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Widget _buildTopAppBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppThemeConstants.marginMobile, vertical: 16),
+      height: 64,
+      width: double.infinity,
       decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.primary, width: 4)),
+        color: AppColors.background,
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.primary,
+            width: AppThemeConstants.borderThick,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary,
+            offset: Offset(0, 4),
+            blurRadius: 0,
+          ),
+        ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppThemeConstants.marginMobile,
+      ),
+      child: Stack(
+        alignment: Alignment.center,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: const Icon(Icons.menu, color: AppColors.primary, size: 32),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                onPressed: () {},
-              ),
-              const SizedBox(width: 16),
-              Text(
-                'AYAM DEPRESI',
-                style: AppTypography.headlineMd.copyWith(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.primary,
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+                style: IconButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    side: const BorderSide(color: AppColors.primary, width: 2),
+                  ),
                 ),
               ),
+              const SizedBox(
+                width: 48,
+              ), // Placeholder to balance the back button
             ],
           ),
-          const Icon(Icons.shopping_cart, color: AppColors.primary, size: 32),
+          Text(
+            'AYAM DEPRESI',
+            style: AppTypography.headlineMd.copyWith(
+              fontSize: 20,
+              color: AppColors.primary,
+            ),
+          ),
         ],
       ),
     );
@@ -315,10 +354,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppTypography.labelMono,
-        ),
+        Text(label, style: AppTypography.labelMono),
         const SizedBox(height: 8),
         TextFormField(
           obscureText: obscureText,
@@ -326,7 +362,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           style: AppTypography.bodyMd,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: AppTypography.bodyMd.copyWith(color: AppColors.secondary.withValues(alpha: 0.5)),
+            hintStyle: AppTypography.bodyMd.copyWith(
+              color: AppColors.secondary.withValues(alpha: 0.5),
+            ),
             suffixIcon: isPassword
                 ? IconButton(
                     icon: Icon(
@@ -362,7 +400,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         children: [
           Text(
             'AYAM DEPRESI',
-            style: AppTypography.headlineMd.copyWith(color: AppColors.onPrimary),
+            style: AppTypography.headlineMd.copyWith(
+              color: AppColors.onPrimary,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
@@ -418,7 +458,7 @@ class HatchPatternPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final spacing = 8.0;
-    
+
     // Draw diagonal lines
     for (double i = -size.height; i < size.width; i += spacing) {
       canvas.drawLine(

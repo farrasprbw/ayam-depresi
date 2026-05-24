@@ -7,7 +7,10 @@ import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
 import '../widgets/brutal_cached_image.dart';
 import 'menu_detail_screen.dart';
-import 'order_status_screen.dart';
+import 'history_screen.dart';
+import 'profile_screen.dart';
+import 'cart_screen.dart';
+import 'menu_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,29 +28,37 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.background,
       // Custom App Bar built into the body for brutalist styling control
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopAppBar(),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppThemeConstants.marginMobile,
-                  vertical: 24,
-                ),
+        child: _selectedIndex == 3
+            ? const ProfileScreenContent()
+            : _selectedIndex == 2
+            ? const HistoryScreenContent()
+            : _selectedIndex == 1
+            ? const MenuScreenContent()
+            : Column(
                 children: [
-                  _buildFlashSale(),
-                  const SizedBox(height: 32),
-                  _buildCategories(),
-                  const SizedBox(height: 32),
-                  _buildFeaturedMenu(),
-                  const SizedBox(height: 96),
+                  _buildTopAppBar(),
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppThemeConstants.marginMobile,
+                        vertical: 24,
+                      ),
+                      children: [
+                        _buildActiveOrderBanner(),
+                        const SizedBox(height: 24),
+                        _buildFlashSale(),
+                        const SizedBox(height: 32),
+                        _buildCategories(),
+                        const SizedBox(height: 32),
+                        _buildFeaturedMenu(),
+                        const SizedBox(height: 96),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ],
-        ),
       ),
-      floatingActionButton: _buildFab(),
+      floatingActionButton: _selectedIndex == 0 ? _buildFab() : null,
       bottomNavigationBar: _buildBottomNav(),
     );
   }
@@ -69,77 +80,69 @@ class _HomeScreenState extends State<HomeScreen> {
             color: AppColors.primary,
             offset: Offset(0, 4), // bottom shadow only for app bar
             blurRadius: 0,
-          )
+          ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: AppThemeConstants.marginMobile),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppThemeConstants.marginMobile,
+      ),
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          // Location Button
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.location_on, color: AppColors.primary),
-            style: IconButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-          ),
-          // Center Title
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'AYAM DEPRESI',
-                style: AppTypography.headlineMd.copyWith(
-                  fontSize: 20,
-                  color: AppColors.primary,
-                ),
-              ),
-              Container(
-                color: AppColors.primary,
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                child: Text(
-                  'LT. 12, NO. 1205',
-                  style: AppTypography.labelMonoSmall.copyWith(
-                    color: AppColors.onPrimary,
-                    fontSize: 10,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          // Cart Button
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.shopping_cart, color: AppColors.primary),
-                style: IconButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: AppColors.error,
-                    shape: BoxShape.circle,
-                    border: Border.all(
+              const SizedBox(width: 40), // Spacer to maintain balance
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CartScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.shopping_cart,
                       color: AppColors.primary,
-                      width: 2,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: AppColors.error,
+                        border: Border.all(color: AppColors.primary, width: 2),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '3',
+                          style: AppTypography.labelMonoSmall.copyWith(
+                            color: AppColors.onError,
+                            fontSize: 8,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
             ],
+          ),
+          Text(
+            'AYAM DEPRESI',
+            style: AppTypography.headlineMd.copyWith(
+              fontSize: 20,
+              color: AppColors.primary,
+            ),
           ),
         ],
       ),
@@ -163,11 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
             top: -40,
             child: Transform.rotate(
               angle: 12 * pi / 180,
-              child: const Icon(
-                Icons.timer,
-                size: 150,
-                color: Colors.white24,
-              ),
+              child: const Icon(Icons.timer, size: 150, color: Colors.white24),
             ),
           ),
           // Content
@@ -178,7 +177,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 angle: -2 * pi / 180,
                 child: Container(
                   color: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   child: Text(
                     'FLASH SALE!',
                     style: AppTypography.headlineMd.copyWith(
@@ -191,7 +193,9 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 8),
               Text(
                 'DISKON 50% JAM 19:00 - 21:00',
-                style: AppTypography.labelMono.copyWith(color: AppColors.onPrimary),
+                style: AppTypography.labelMono.copyWith(
+                  color: AppColors.onPrimary,
+                ),
               ),
               const SizedBox(height: 16),
               BrutalButton(
@@ -214,15 +218,12 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text(
               'LEVEL STRES',
-              style: AppTypography.headlineMd.copyWith(color: AppColors.primary),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Container(
-                height: 4,
+              style: AppTypography.headlineMd.copyWith(
                 color: AppColors.primary,
               ),
             ),
+            const SizedBox(width: 16),
+            Expanded(child: Container(height: 4, color: AppColors.primary)),
           ],
         ),
         const SizedBox(height: 16),
@@ -346,16 +347,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            Expanded(
-              child: Container(
-                height: 4,
-                color: AppColors.primary,
-              ),
-            ),
+            Expanded(child: Container(height: 4, color: AppColors.primary)),
           ],
         ),
         const SizedBox(height: 24),
-        
+
         // Large Item (Paket Putus Cinta)
         GestureDetector(
           onTap: () => Navigator.push(
@@ -368,108 +364,128 @@ class _HomeScreenState extends State<HomeScreen> {
               border: AppThemeConstants.brutalBorder,
               boxShadow: AppThemeConstants.brutalShadow,
             ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image container
-              Container(
-                height: 200,
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: AppColors.surfaceContainerHigh,
-                  border: Border(bottom: BorderSide(color: AppColors.primary, width: 4)),
-                ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    BrutalCachedImage(
-                      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCw4FW_xrUcUy_RbcmbJFnxJbmteucBxnIDCrtQG5MldX_g89FjqXdufRhi1LjBIxfcQIKu72E12RYfM-pLMMJOY8lKFuK2mpBs6_oY-7OSe2GhSd1-Nu_EnrugVXjiR0AQW3d5wXujgGhuL_647gpdidVU6jl0g2EHU_kmXnquGwr73L_Za7xwFedfJOagGJO11gEur2z3czzFfuwTlV3jlbXK7hav_r6NYF6fWCo033vIh35NSx9rjxWhE1CGLPbkt80uelHrOKM',
-                      fit: BoxFit.cover,
-                      memCacheWidth: 600,
-                      grayscale: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image container
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: AppColors.surfaceContainerHigh,
+                    border: Border(
+                      bottom: BorderSide(color: AppColors.primary, width: 4),
                     ),
-                    Positioned(
-                      top: 16,
-                      left: 16,
-                      child: Transform.rotate(
-                        angle: -3 * pi / 180,
-                        child: Container(
-                          color: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          child: Text(
-                            'BEST SELLER',
-                            style: AppTypography.labelMono.copyWith(color: AppColors.onPrimary),
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      BrutalCachedImage(
+                        imageUrl:
+                            'https://lh3.googleusercontent.com/aida-public/AB6AXuCw4FW_xrUcUy_RbcmbJFnxJbmteucBxnIDCrtQG5MldX_g89FjqXdufRhi1LjBIxfcQIKu72E12RYfM-pLMMJOY8lKFuK2mpBs6_oY-7OSe2GhSd1-Nu_EnrugVXjiR0AQW3d5wXujgGhuL_647gpdidVU6jl0g2EHU_kmXnquGwr73L_Za7xwFedfJOagGJO11gEur2z3czzFfuwTlV3jlbXK7hav_r6NYF6fWCo033vIh35NSx9rjxWhE1CGLPbkt80uelHrOKM',
+                        fit: BoxFit.cover,
+                        memCacheWidth: 600,
+                        grayscale: true,
+                      ),
+                      Positioned(
+                        top: 16,
+                        left: 16,
+                        child: Transform.rotate(
+                          angle: -3 * pi / 180,
+                          child: Container(
+                            color: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            child: Text(
+                              'BEST SELLER',
+                              style: AppTypography.labelMono.copyWith(
+                                color: AppColors.onPrimary,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              // Content
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'PAKET PUTUS CINTA',
-                      style: AppTypography.headlineMd.copyWith(fontSize: 24),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Nasi + Ayam Geprek Level Berat (Cabe 50) + Es Teh Manis untuk mendinginkan hati yang panas.',
-                      style: AppTypography.bodyMd.copyWith(color: AppColors.secondary),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceContainer,
-                            border: Border.all(color: AppColors.primary, width: 2),
-                          ),
-                          child: Text(
-                            'Rp 35.000',
-                            style: AppTypography.labelMono.copyWith(fontSize: 18),
-                          ),
+                // Content
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'PAKET PUTUS CINTA',
+                        style: AppTypography.headlineMd.copyWith(fontSize: 24),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Nasi + Ayam Geprek Level Berat (Cabe 50) + Es Teh Manis untuk mendinginkan hati yang panas.',
+                        style: AppTypography.bodyMd.copyWith(
+                          color: AppColors.secondary,
                         ),
-                        BrutalButton(
-                          text: 'TAMBAH',
-                          icon: Icons.add,
-                          isPrimary: true,
-                          onPressed: () {},
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceContainer,
+                              border: Border.all(
+                                color: AppColors.primary,
+                                width: 2,
+                              ),
+                            ),
+                            child: Text(
+                              'Rp 35.000',
+                              style: AppTypography.labelMono.copyWith(
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
+                          BrutalButton(
+                            text: 'TAMBAH',
+                            icon: Icons.add,
+                            isPrimary: true,
+                            onPressed: () {},
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
         ), // Close GestureDetector
-        
+
         const SizedBox(height: 24),
-        
+
         // Small Item (Kol Goreng Ngenes)
         _buildSmallMenuItem(
           title: 'KOL GORENG\nNGENES',
           originalPrice: 'Rp 15.000',
           price: 'Rp 10.000',
-          imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCmrIiEezVpeyUssw0OJUnheDn7WEULbp8X3_TbBdy8F3gHNWIEa62gU5tD6K2Ob-NiHjTid407t4OCRKoGgx6ZlNq-lJLgfA_usjapXJ_HUKuEICZ9D375hps7OLUQh_W68s4VLjI-xxCZifrL__4paeyWK3prwbLq5959JB4beYWO_rIq1cymuQLFdfAcjqL1DRR0hegIQR09UzJqsRZuPvjl0F3GmUD8jeLYn0sl0X0IfYLBsr3ENXR-9W74NSDcwyWzqYEp5M8',
+          imageUrl:
+              'https://lh3.googleusercontent.com/aida-public/AB6AXuCmrIiEezVpeyUssw0OJUnheDn7WEULbp8X3_TbBdy8F3gHNWIEa62gU5tD6K2Ob-NiHjTid407t4OCRKoGgx6ZlNq-lJLgfA_usjapXJ_HUKuEICZ9D375hps7OLUQh_W68s4VLjI-xxCZifrL__4paeyWK3prwbLq5959JB4beYWO_rIq1cymuQLFdfAcjqL1DRR0hegIQR09UzJqsRZuPvjl0F3GmUD8jeLYn0sl0X0IfYLBsr3ENXR-9W74NSDcwyWzqYEp5M8',
           isAvailable: true,
         ),
-        
+
         const SizedBox(height: 24),
-        
+
         // Small Item (Kulit Krispi Kandas - HABIS)
         _buildSmallMenuItem(
           title: 'KULIT KRISPI\nKANDAS',
           price: 'Rp 12.000',
-          imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAi75Lcm9Z9sS7tqVJsCAvQcSIJcJFp_C8bZy1gAc_-DKzeUAtf4WuCsmmL8FWdasua5iWy1-cHUSbl2Go6CUlem4u4wNDkZdHYq7q0F9rUJ6kaAFLuWtV695o6HpedMZ_fgHpdnq8C7pdQReJ2S2zgbC-MxCfN441LOJ_vNuOxfE1qq6Nfiu_vZiGXojIIaPPnclqjItcGnAE0t2Q_uJc3-zQC5HxlTIZzEE9pV4CENF7n1_K3GSOMVzp3re5LYzShypPl0tK90Rs',
+          imageUrl:
+              'https://lh3.googleusercontent.com/aida-public/AB6AXuAi75Lcm9Z9sS7tqVJsCAvQcSIJcJFp_C8bZy1gAc_-DKzeUAtf4WuCsmmL8FWdasua5iWy1-cHUSbl2Go6CUlem4u4wNDkZdHYq7q0F9rUJ6kaAFLuWtV695o6HpedMZ_fgHpdnq8C7pdQReJ2S2zgbC-MxCfN441LOJ_vNuOxfE1qq6Nfiu_vZiGXojIIaPPnclqjItcGnAE0t2Q_uJc3-zQC5HxlTIZzEE9pV4CENF7n1_K3GSOMVzp3re5LYzShypPl0tK90Rs',
           isAvailable: false,
         ),
       ],
@@ -486,9 +502,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: isAvailable
           ? () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const MenuDetailScreen()),
-              )
+              context,
+              MaterialPageRoute(builder: (context) => const MenuDetailScreen()),
+            )
           : null,
       child: Container(
         decoration: BoxDecoration(
@@ -506,7 +522,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 120,
                   height: double.infinity,
                   decoration: const BoxDecoration(
-                    border: Border(right: BorderSide(color: AppColors.primary, width: 4)),
+                    border: Border(
+                      right: BorderSide(color: AppColors.primary, width: 4),
+                    ),
                   ),
                   child: BrutalCachedImage(
                     imageUrl: imageUrl,
@@ -529,7 +547,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Text(
                               title,
-                              style: AppTypography.labelMono.copyWith(fontSize: 16),
+                              style: AppTypography.labelMono.copyWith(
+                                fontSize: 16,
+                              ),
                             ),
                             if (originalPrice != null)
                               Text(
@@ -547,7 +567,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Text(
                               price,
-                              style: AppTypography.labelMono.copyWith(fontSize: 14),
+                              style: AppTypography.labelMono.copyWith(
+                                fontSize: 14,
+                              ),
                             ),
                             if (isAvailable)
                               GestureDetector(
@@ -557,12 +579,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                   height: 32,
                                   decoration: BoxDecoration(
                                     color: AppColors.primary,
-                                    border: Border.all(color: AppColors.primary, width: 2),
+                                    border: Border.all(
+                                      color: AppColors.primary,
+                                      width: 2,
+                                    ),
                                     boxShadow: const [
-                                      BoxShadow(color: AppColors.primary, offset: Offset(2, 2)),
+                                      BoxShadow(
+                                        color: AppColors.primary,
+                                        offset: Offset(2, 2),
+                                      ),
                                     ],
                                   ),
-                                  child: const Icon(Icons.add, color: AppColors.onPrimary, size: 20),
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: AppColors.onPrimary,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
                           ],
@@ -582,15 +614,81 @@ class _HomeScreenState extends State<HomeScreen> {
                     angle: -15 * pi / 180,
                     child: Container(
                       color: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
                       child: Text(
                         'HABIS',
-                        style: AppTypography.labelMono.copyWith(color: AppColors.onPrimary),
+                        style: AppTypography.labelMono.copyWith(
+                          color: AppColors.onPrimary,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActiveOrderBanner() {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedIndex = 2; // Go to History
+        });
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.errorContainer,
+          border: AppThemeConstants.brutalBorder,
+          boxShadow: AppThemeConstants.brutalShadow,
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: const BoxDecoration(
+                color: AppColors.error,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.directions_bike,
+                color: AppColors.onError,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '🔥 AYAM SEDANG DISIKSA',
+                    style: AppTypography.headlineMd.copyWith(
+                      color: AppColors.onErrorContainer,
+                      fontSize: 18,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Lacak pesananmu sekarang!',
+                    style: AppTypography.bodyMd.copyWith(
+                      color: AppColors.onErrorContainer,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              color: AppColors.onErrorContainer,
+              size: 32,
+            ),
           ],
         ),
       ),
@@ -633,16 +731,14 @@ class _HomeScreenState extends State<HomeScreen> {
       height: 80,
       decoration: const BoxDecoration(
         color: AppColors.background,
-        border: Border(
-          top: BorderSide(color: AppColors.primary, width: 4),
-        ),
+        border: Border(top: BorderSide(color: AppColors.primary, width: 4)),
       ),
       child: Row(
         children: [
           _buildNavItem(0, 'Home', Icons.home),
-          _buildNavItem(1, 'Order', Icons.restaurant),
-          _buildNavItem(2, 'History', Icons.receipt_long),
-          _buildNavItem(3, 'Profile', Icons.person),
+          _buildNavItem(1, 'Menu', Icons.restaurant_menu),
+          _buildNavItem(2, 'Order', Icons.receipt_long),
+          _buildNavItem(3, 'Sadness', Icons.sentiment_very_dissatisfied),
         ],
       ),
     );
@@ -653,16 +749,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const OrderStatusScreen()),
-            );
-          } else {
-            setState(() {
-              _selectedIndex = index;
-            });
-          }
+          setState(() {
+            _selectedIndex = index;
+          });
         },
         child: Container(
           color: isSelected ? AppColors.primary : Colors.transparent,

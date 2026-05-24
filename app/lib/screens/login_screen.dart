@@ -6,7 +6,7 @@ import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
 import '../widgets/brutal_text_field.dart';
 import 'forgot_password_screen.dart';
-import 'home_screen.dart';
+import 'otp_screen.dart';
 import 'register_screen.dart';
 
 /// Login screen — "MASUK KE NERAKA"
@@ -145,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen>
                   0, 0, 0, 1, 0,
                 ]),
                 child: Image.asset(
-                  'assets/images/logo.png',
+                  'assets/images/logo-no-bg.webp',
                   fit: BoxFit.contain,
                 ),
               ),
@@ -392,7 +392,7 @@ class _LoginScreenState extends State<LoginScreen>
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
+          pageBuilder: (context, animation, secondaryAnimation) => const OtpScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },

@@ -5,14 +5,14 @@ import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
 
-class OrderStatusScreen extends StatefulWidget {
-  const OrderStatusScreen({super.key});
+class OrderStatusView extends StatefulWidget {
+  const OrderStatusView({super.key});
 
   @override
-  State<OrderStatusScreen> createState() => _OrderStatusScreenState();
+  State<OrderStatusView> createState() => _OrderStatusViewState();
 }
 
-class _OrderStatusScreenState extends State<OrderStatusScreen>
+class _OrderStatusViewState extends State<OrderStatusView>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -38,85 +38,31 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Stack(
+    return Stack(
+      children: [
+        // Dot pattern background
+        CustomPaint(painter: GridPatternPainter(), size: Size.infinite),
+        Column(
           children: [
-            // Dot pattern background
-            CustomPaint(painter: GridPatternPainter(), size: Size.infinite),
-            Column(
-              children: [
-                _buildTopAppBar(),
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.only(
-                      left: AppThemeConstants.marginMobile,
-                      right: AppThemeConstants.marginMobile,
-                      top: 32,
-                      bottom: 120, // Space for bottom bar
-                    ),
-                    children: [
-                      _buildHeaderSection(),
-                      const SizedBox(height: 48),
-                      _buildTimelineSection(),
-                    ],
-                  ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.only(
+                  left: AppThemeConstants.marginMobile,
+                  right: AppThemeConstants.marginMobile,
+                  top: 32,
+                  bottom: 120, // Space for bottom bar
                 ),
-              ],
+                children: [
+                  _buildHeaderSection(),
+                  const SizedBox(height: 48),
+                  _buildTimelineSection(),
+                ],
+              ),
             ),
-            _buildBottomBar(),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTopAppBar() {
-    return Container(
-      height: 64,
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        border: Border(
-          bottom: BorderSide(
-            color: AppColors.primary,
-            width: AppThemeConstants.borderThick,
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary,
-            offset: Offset(0, 4),
-            blurRadius: 0,
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppThemeConstants.marginMobile,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back, color: AppColors.primary),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'AYAM DEPRESI',
-                style: AppTypography.headlineMd.copyWith(
-                  fontSize: 20,
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
-          ),
-          const Icon(Icons.receipt_long, color: AppColors.primary),
-        ],
-      ),
+        _buildBottomBar(),
+      ],
     );
   }
 
@@ -221,16 +167,8 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
           ),
           _buildActiveTimelineStep(),
           _buildTimelineStep(
-            icon: Icons.elevator,
-            title: 'SAMPAI DI LIFT LOBBY',
-            description: 'Menunggu abangnya naik.',
-            isUpcoming: true,
-            isLast: false,
-            isDashedLine: true,
-          ),
-          _buildTimelineStep(
             icon: Icons.meeting_room,
-            title: 'SAMPAI DI KAMAR',
+            title: 'SAMPAI TUJUAN',
             description: 'Siap-siap nangis bareng.',
             isUpcoming: true,
             isLast: true,
@@ -254,7 +192,7 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
 
     return IntrinsicHeight(
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Timeline graphics
           SizedBox(
@@ -266,7 +204,7 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
                 if (!isLast)
                   Positioned(
                     top: 48,
-                    bottom: -32,
+                    bottom: 0,
                     child: CustomPaint(
                       painter: LinePainter(
                         isDashed: isDashedLine,
@@ -340,7 +278,7 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
   Widget _buildActiveTimelineStep() {
     return IntrinsicHeight(
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Timeline graphics
           SizedBox(
@@ -351,7 +289,7 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
               children: [
                 Positioned(
                   top: 48,
-                  bottom: -32,
+                  bottom: 0,
                   child: CustomPaint(
                     painter: LinePainter(
                       isDashed: true,

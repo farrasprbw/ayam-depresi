@@ -6,6 +6,7 @@ import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
 import '../widgets/brutal_cached_image.dart';
 import '../widgets/brutal_text_field.dart';
+import 'cart_screen.dart';
 
 class MenuDetailScreen extends StatefulWidget {
   const MenuDetailScreen({super.key});
@@ -89,19 +90,71 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: AppThemeConstants.marginMobile),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          // Back Button
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back, color: AppColors.primary),
-            style: IconButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-                side: const BorderSide(color: AppColors.primary, width: 2),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Back Button
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+                style: IconButton.styleFrom(
+                  backgroundColor: AppColors.surfaceContainerLowest,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
+                    side: const BorderSide(color: AppColors.primary, width: 2),
+                  ),
+                ),
               ),
-            ),
+              // Cart Button
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CartScreen()),
+                      );
+                    },
+                    icon: const Icon(Icons.shopping_cart, color: AppColors.primary),
+                    style: IconButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                        side: const BorderSide(color: AppColors.primary, width: 2),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Container(
+                      width: 14,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: AppColors.error,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.primary,
+                          width: 1,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '3',
+                          style: AppTypography.labelMonoSmall.copyWith(
+                            color: AppColors.onPrimary,
+                            fontSize: 8,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           // Center Title
           Text(
@@ -110,47 +163,6 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
               fontSize: 24,
               color: AppColors.primary,
             ),
-          ),
-          // Cart Button
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.shopping_cart, color: AppColors.primary),
-                style: IconButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                    side: const BorderSide(color: AppColors.primary, width: 2),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 4,
-                right: 4,
-                child: Container(
-                  width: 14,
-                  height: 14,
-                  decoration: BoxDecoration(
-                    color: AppColors.error,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.primary,
-                      width: 1,
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '2',
-                      style: AppTypography.labelMonoSmall.copyWith(
-                        color: AppColors.onPrimary,
-                        fontSize: 8,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ),
         ],
       ),

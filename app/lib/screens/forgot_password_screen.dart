@@ -74,24 +74,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         border: Border(bottom: BorderSide(color: AppColors.primary, width: 4)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: AppThemeConstants.marginMobile),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          // Back Button
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: AppColors.primary, width: 2),
-                boxShadow: AppThemeConstants.brutalShadow,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Back Button
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+                style: IconButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    side: const BorderSide(color: AppColors.primary, width: 2),
+                  ),
+                ),
               ),
-              child: const Center(
-                child: Icon(Icons.arrow_back, color: AppColors.primary, size: 24),
-              ),
-            ),
+              const SizedBox(width: 48), // Spacer for centering
+            ],
           ),
           Text(
             'AYAM DEPRESI',
@@ -101,7 +102,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
               fontStyle: FontStyle.italic,
             ),
           ),
-          const SizedBox(width: 40), // Spacer for centering
         ],
       ),
     );

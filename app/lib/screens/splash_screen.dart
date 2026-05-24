@@ -126,7 +126,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  /// The logo inside a rotated brutalist box with a glitch overlay
+  /// The logo inside a rotated brutalist box
   Widget _buildLogoBox() {
     return Transform.rotate(
       angle: -2 * pi / 180, // -2 degrees
@@ -145,36 +145,12 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ],
         ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Logo Image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: RepaintBoundary(
-                child: ColorFiltered(
-                  colorFilter: const ColorFilter.matrix(<double>[
-                    1.25, 0, 0, 0, 0,
-                    0, 0.5, 0, 0, 0,
-                    0, 0, 0.5, 0, 0,
-                    0, 0, 0, 1, 0,
-                  ]),
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    fit: BoxFit.cover,
-                    colorBlendMode: BlendMode.multiply,
-                  ),
-                ),
-              ),
-            ),
-            // Glitch overlay simulation
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.error, width: 2),
-                color: AppColors.error.withValues(alpha: 0.1),
-              ),
-            ),
-          ],
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.asset(
+            'assets/images/logo.webp',
+            fit: BoxFit.contain,
+          ),
         ),
       ),
     );
