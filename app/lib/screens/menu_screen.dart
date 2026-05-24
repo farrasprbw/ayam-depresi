@@ -6,6 +6,7 @@ import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
 import '../widgets/brutal_cached_image.dart';
 import 'cart_screen.dart';
+import 'menu_detail_screen.dart';
 import 'package:provider/provider.dart';
 import '../models/menu_item.dart';
 import '../services/menu_service.dart';
@@ -25,7 +26,7 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
     'PAKET GEPREK',
     'ALA CARTE',
     'MINUMAN',
-    'TAMBAHAN'
+    'TAMBAHAN',
   ];
 
   @override
@@ -60,15 +61,13 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
       width: double.infinity,
       decoration: const BoxDecoration(
         color: AppColors.background,
-        border: Border(
-          bottom: BorderSide(color: AppColors.primary, width: 4),
-        ),
+        border: Border(bottom: BorderSide(color: AppColors.primary, width: 4)),
         boxShadow: [
           BoxShadow(
             color: AppColors.primary,
             offset: Offset(0, 4),
             blurRadius: 0,
-          )
+          ),
         ],
       ),
       padding: const EdgeInsets.symmetric(
@@ -87,7 +86,10 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
                   style: IconButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4),
-                      side: const BorderSide(color: AppColors.primary, width: 2),
+                      side: const BorderSide(
+                        color: AppColors.primary,
+                        width: 2,
+                      ),
                     ),
                   ),
                 )
@@ -100,10 +102,15 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const CartScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const CartScreen(),
+                        ),
                       );
                     },
-                    icon: const Icon(Icons.shopping_cart, color: AppColors.primary),
+                    icon: const Icon(
+                      Icons.shopping_cart,
+                      color: AppColors.primary,
+                    ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
@@ -118,7 +125,10 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
                           height: 16,
                           decoration: BoxDecoration(
                             color: AppColors.error,
-                            border: Border.all(color: AppColors.primary, width: 2),
+                            border: Border.all(
+                              color: AppColors.primary,
+                              width: 2,
+                            ),
                           ),
                           child: Center(
                             child: Text(
@@ -195,9 +205,14 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
                 });
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : AppColors.surfaceContainerLowest,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.surfaceContainerLowest,
                   border: Border.all(color: AppColors.primary, width: 4),
                   boxShadow: isSelected ? AppThemeConstants.brutalShadow : null,
                 ),
@@ -231,26 +246,23 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
               ),
             ),
             const SizedBox(width: 16),
-            Expanded(
-              child: Container(
-                height: 4,
-                color: AppColors.primary,
-              ),
-            ),
+            Expanded(child: Container(height: 4, color: AppColors.primary)),
           ],
         ),
         const SizedBox(height: 24),
-        
+
         StreamBuilder<List<MenuItem>>(
           stream: MenuService().getMenusByCategory(currentCategory),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+              return const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              );
             }
             if (snapshot.hasError) {
               return Text('Error: ${snapshot.error}');
             }
-            
+
             final menus = snapshot.data ?? [];
             if (menus.isEmpty) {
               return Text(
@@ -271,9 +283,7 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
                 }
                 return Column(
                   children: [
-                    _buildMenuItem(
-                      menu: menu,
-                    ),
+                    _buildMenuItem(menu: menu),
                     const SizedBox(height: 24),
                   ],
                 );
@@ -281,140 +291,154 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
             );
           },
         ),
-
       ],
     );
   }
 
-  Widget _buildMenuItem({
-    required MenuItem menu,
-  }) {
-    final formatCurrency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        border: Border.all(color: AppColors.primary, width: 4),
-        boxShadow: AppThemeConstants.brutalShadowLg,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Stack(
-            children: [
-              Container(
-                height: 200,
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: AppColors.primary, width: 4),
+  Widget _buildMenuItem({required MenuItem menu}) {
+    final formatCurrency = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const MenuDetailScreen()),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerLowest,
+          border: Border.all(color: AppColors.primary, width: 4),
+          boxShadow: AppThemeConstants.brutalShadowLg,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Stack(
+              children: [
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: AppColors.primary, width: 4),
+                    ),
                   ),
-                ),
-                child: menu.isGrayscale
-                    ? ColorFiltered(
-                        colorFilter: const ColorFilter.mode(
-                          Colors.grey,
-                          BlendMode.saturation,
-                        ),
-                        child: BrutalCachedImage(
+                  child: menu.isGrayscale
+                      ? ColorFiltered(
+                          colorFilter: const ColorFilter.mode(
+                            Colors.grey,
+                            BlendMode.saturation,
+                          ),
+                          child: BrutalCachedImage(
+                            imageUrl: menu.imageUrl,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : BrutalCachedImage(
                           imageUrl: menu.imageUrl,
                           fit: BoxFit.cover,
                         ),
-                      )
-                    : BrutalCachedImage(
-                        imageUrl: menu.imageUrl,
-                        fit: BoxFit.cover,
-                      ),
-              ),
-              if (menu.tag != null && menu.tag!.isNotEmpty)
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: Transform.rotate(
-                    angle: 3 * pi / 180,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.error,
-                        border: Border.all(color: AppColors.primary, width: 2),
-                      ),
-                      child: Text(
-                        menu.tag!,
-                        style: AppTypography.labelMono.copyWith(
-                          color: AppColors.onError,
-                        ),
-                      ),
-                    ),
-                  ),
                 ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        menu.title.toUpperCase(),
-                        style: AppTypography.headlineMd.copyWith(
-                          fontSize: 24,
-                          height: 1.1,
+                if (menu.tag != null && menu.tag!.isNotEmpty)
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: Transform.rotate(
+                      angle: 3 * pi / 180,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
                         ),
-                      ),
-                    ),
-                    if (menu.spicyLevel > 0)
-                      Row(
-                        children: List.generate(
-                          menu.spicyLevel,
-                          (index) => const Icon(
-                            Icons.local_fire_department,
-                            color: AppColors.error,
-                            size: 20,
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          border: Border.all(
+                            color: AppColors.primary,
+                            width: 2,
+                          ),
+                        ),
+                        child: Text(
+                          menu.tag!,
+                          style: AppTypography.labelMono.copyWith(
+                            color: AppColors.onError,
                           ),
                         ),
                       ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  menu.description,
-                  style: AppTypography.bodyMd.copyWith(
-                    color: AppColors.secondary,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      formatCurrency.format(menu.price),
-                      style: AppTypography.headlineMd.copyWith(
-                        fontSize: 24,
-                      ),
-                    ),
-                    BrutalButton(
-                      text: 'TAMBAH +',
-                      isPrimary: true,
-                      onPressed: () {
-                        context.read<CartProvider>().addItem(menu);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('${menu.title} ditambah ke keranjang.')),
-                        );
-                      },
-                    ),
-                  ],
-                ),
               ],
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          menu.title.toUpperCase(),
+                          style: AppTypography.headlineMd.copyWith(
+                            fontSize: 24,
+                            height: 1.1,
+                          ),
+                        ),
+                      ),
+                      if (menu.spicyLevel > 0)
+                        Row(
+                          children: List.generate(
+                            menu.spicyLevel,
+                            (index) => const Icon(
+                              Icons.local_fire_department,
+                              color: AppColors.error,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    menu.description,
+                    style: AppTypography.bodyMd.copyWith(
+                      color: AppColors.secondary,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        formatCurrency.format(menu.price),
+                        style: AppTypography.headlineMd.copyWith(fontSize: 24),
+                      ),
+                      BrutalButton(
+                        text: 'TAMBAH +',
+                        isPrimary: true,
+                        onPressed: () {
+                          context.read<CartProvider>().addItem(menu);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${menu.title} ditambah ke keranjang.',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -445,9 +469,7 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
                   child: Transform.rotate(
                     angle: -12 * pi / 180,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
                         color: AppColors.error,
                         border: Border.all(color: AppColors.primary, width: 8),
@@ -497,11 +519,7 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
   Widget _buildFooter() {
     return Column(
       children: [
-        Container(
-          height: 4,
-          width: double.infinity,
-          color: AppColors.primary,
-        ),
+        Container(height: 4, width: double.infinity, color: AppColors.primary),
         const SizedBox(height: 40),
         Text(
           '"MAKAN PEDAS BIAR LUPA SAKIT HATI"',
@@ -515,9 +533,7 @@ class _MenuScreenContentState extends State<MenuScreenContent> {
         Text(
           '© 2024 AYAM DEPRESI - EST. 2020 DI TENGAH PANDEMI DAN AIR MATA',
           textAlign: TextAlign.center,
-          style: AppTypography.labelMono.copyWith(
-            color: AppColors.secondary,
-          ),
+          style: AppTypography.labelMono.copyWith(color: AppColors.secondary),
         ),
       ],
     );

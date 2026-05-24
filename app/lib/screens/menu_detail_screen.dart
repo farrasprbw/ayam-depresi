@@ -18,7 +18,7 @@ class MenuDetailScreen extends StatefulWidget {
 }
 
 class _MenuDetailScreenState extends State<MenuDetailScreen> {
-  double _spiceLevel = 5;
+  double _spiceLevel = 1;
   final Map<String, bool> _toppings = {
     'Telur Dadar Judes': false,
     'Tahu Goreng Kering': false,
@@ -47,7 +47,9 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                     children: [
                       _buildHeroImage(),
                       Padding(
-                        padding: const EdgeInsets.all(AppThemeConstants.marginMobile),
+                        padding: const EdgeInsets.all(
+                          AppThemeConstants.marginMobile,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -59,7 +61,8 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                             const SizedBox(height: 32),
                             BrutalTextField(
                               label: 'CATATAN UNTUK PENJUAL',
-                              placeholder: 'Contoh: Sambalnya dipisah aja mas...',
+                              placeholder:
+                                  'Contoh: Sambalnya dipisah aja mas...',
                               maxLines: 3,
                               controller: _notesController,
                             ),
@@ -91,7 +94,9 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
           ),
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: AppThemeConstants.marginMobile),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppThemeConstants.marginMobile,
+      ),
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -118,14 +123,22 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const CartScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const CartScreen(),
+                        ),
                       );
                     },
-                    icon: const Icon(Icons.shopping_cart, color: AppColors.primary),
+                    icon: const Icon(
+                      Icons.shopping_cart,
+                      color: AppColors.primary,
+                    ),
                     style: IconButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4),
-                        side: const BorderSide(color: AppColors.primary, width: 2),
+                        side: const BorderSide(
+                          color: AppColors.primary,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),
@@ -140,7 +153,10 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                           height: 16,
                           decoration: BoxDecoration(
                             color: AppColors.error,
-                            border: Border.all(color: AppColors.primary, width: 2),
+                            border: Border.all(
+                              color: AppColors.primary,
+                              width: 2,
+                            ),
                           ),
                           child: Center(
                             child: Text(
@@ -187,7 +203,8 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
           fit: StackFit.expand,
           children: [
             BrutalCachedImage(
-              imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCw4FW_xrUcUy_RbcmbJFnxJbmteucBxnIDCrtQG5MldX_g89FjqXdufRhi1LjBIxfcQIKu72E12RYfM-pLMMJOY8lKFuK2mpBs6_oY-7OSe2GhSd1-Nu_EnrugVXjiR0AQW3d5wXujgGhuL_647gpdidVU6jl0g2EHU_kmXnquGwr73L_Za7xwFedfJOagGJO11gEur2z3czzFfuwTlV3jlbXK7hav_r6NYF6fWCo033vIh35NSx9rjxWhE1CGLPbkt80uelHrOKM',
+              imageUrl:
+                  'https://lh3.googleusercontent.com/aida-public/AB6AXuCw4FW_xrUcUy_RbcmbJFnxJbmteucBxnIDCrtQG5MldX_g89FjqXdufRhi1LjBIxfcQIKu72E12RYfM-pLMMJOY8lKFuK2mpBs6_oY-7OSe2GhSd1-Nu_EnrugVXjiR0AQW3d5wXujgGhuL_647gpdidVU6jl0g2EHU_kmXnquGwr73L_Za7xwFedfJOagGJO11gEur2z3czzFfuwTlV3jlbXK7hav_r6NYF6fWCo033vIh35NSx9rjxWhE1CGLPbkt80uelHrOKM',
               fit: BoxFit.cover,
               memCacheWidth: 600,
               grayscale: true,
@@ -196,7 +213,10 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
             Container(
               decoration: BoxDecoration(
                 gradient: RadialGradient(
-                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.5)],
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.5),
+                  ],
                   radius: 1.0,
                 ),
               ),
@@ -206,10 +226,15 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
               left: 24,
               child: Container(
                 color: AppColors.primary,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 child: Text(
                   'BEST SELLER',
-                  style: AppTypography.labelMono.copyWith(color: AppColors.onPrimary),
+                  style: AppTypography.labelMono.copyWith(
+                    color: AppColors.onPrimary,
+                  ),
                 ),
               ),
             ),
@@ -233,9 +258,7 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
         const SizedBox(height: 8),
         Text(
           'Rp 28.000',
-          style: AppTypography.bodyLg.copyWith(
-            color: AppColors.error,
-          ),
+          style: AppTypography.bodyLg.copyWith(color: AppColors.error),
         ),
         const SizedBox(height: 16),
         Text(
@@ -297,14 +320,16 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                     inactiveTrackColor: AppColors.primary,
                     thumbColor: Colors.blue, // As shown in reference
                     overlayColor: Colors.blue.withValues(alpha: 0.2),
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 10,
+                    ),
                     trackShape: const RectangularSliderTrackShape(),
                   ),
                   child: Slider(
                     value: _spiceLevel,
                     min: 1,
-                    max: 15,
-                    divisions: 14,
+                    max: 4,
+                    divisions: 3,
                     onChanged: (value) {
                       setState(() {
                         _spiceLevel = value;
@@ -317,14 +342,14 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Lv. 1 (Cemen)',
+                      'Lv. 1 (Ringan)',
                       style: AppTypography.labelMonoSmall.copyWith(
                         color: AppColors.secondary,
                         fontSize: 10,
                       ),
                     ),
                     Text(
-                      'Lv. 15 (Mati Rasa)',
+                      'Lv. 4 (Akut)',
                       style: AppTypography.labelMonoSmall.copyWith(
                         color: AppColors.secondary,
                         fontSize: 10,
@@ -423,7 +448,9 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                   child: Text(
                     title,
                     style: AppTypography.bodyMd.copyWith(
-                      color: isSoldOut ? AppColors.secondary : AppColors.primary,
+                      color: isSoldOut
+                          ? AppColors.secondary
+                          : AppColors.primary,
                       decoration: isSoldOut ? TextDecoration.lineThrough : null,
                     ),
                   ),
@@ -445,7 +472,10 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                 angle: -10 * pi / 180,
                 child: Container(
                   color: AppColors.onSurfaceVariant,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   child: Text(
                     'SOLD OUT',
                     style: AppTypography.labelMonoSmall.copyWith(
@@ -480,7 +510,9 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
             ),
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: AppThemeConstants.marginMobile),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppThemeConstants.marginMobile,
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -496,9 +528,7 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                 ),
                 Text(
                   'Rp 28.000',
-                  style: AppTypography.bodyLg.copyWith(
-                    color: AppColors.error,
-                  ),
+                  style: AppTypography.bodyLg.copyWith(color: AppColors.error),
                 ),
               ],
             ),
@@ -525,13 +555,13 @@ class TrianglePainter extends CustomPainter {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
-    
+
     final path = Path()
       ..moveTo(size.width, 0) // top right
       ..lineTo(size.width, size.height) // bottom right
       ..lineTo(0, 0) // top left
       ..close();
-      
+
     canvas.drawPath(path, paint);
   }
 

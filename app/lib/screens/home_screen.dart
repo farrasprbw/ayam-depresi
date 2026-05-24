@@ -264,21 +264,21 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _buildCategoryCard(
               title: 'RINGAN',
-              subtitle: '(Cabe 1-5)',
+              subtitle: '(Level 1)',
               icon: Icons.sentiment_dissatisfied,
               iconColor: AppColors.primary,
               iconBgColor: AppColors.surfaceContainer,
             ),
             _buildCategoryCard(
               title: 'SEDANG',
-              subtitle: '(Cabe 10-20)',
+              subtitle: '(Level 2)',
               icon: Icons.sentiment_very_dissatisfied,
               iconColor: AppColors.primary,
               iconBgColor: AppColors.surfaceContainer,
             ),
             _buildCategoryCard(
               title: 'BERAT',
-              subtitle: '(Cabe 50)',
+              subtitle: '(Level 3)',
               icon: Icons.mood_bad,
               iconColor: AppColors.onPrimary,
               iconBgColor: AppColors.error,
@@ -286,7 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             _buildCategoryCard(
               title: 'AKUT',
-              subtitle: '(Cabe 100+)',
+              subtitle: '(Level 4)',
               icon: Symbols.skull, // Using material symbols skull
               iconColor: AppColors.onPrimary,
               iconBgColor: AppColors.error,
