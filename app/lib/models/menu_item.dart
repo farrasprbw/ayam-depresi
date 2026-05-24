@@ -9,6 +9,7 @@ class MenuItem {
   final String category;
   final bool isSoldOut;
   final bool isGrayscale;
+  final num? originalPrice;
 
   MenuItem({
     required this.id,
@@ -21,6 +22,7 @@ class MenuItem {
     required this.category,
     this.isSoldOut = false,
     this.isGrayscale = false,
+    this.originalPrice,
   });
 
   factory MenuItem.fromMap(Map<String, dynamic> data, String documentId) {
@@ -35,6 +37,7 @@ class MenuItem {
       category: data['category'] ?? '',
       isSoldOut: data['isSoldOut'] ?? false,
       isGrayscale: data['isGrayscale'] ?? false,
+      originalPrice: data['originalPrice'],
     );
   }
 
@@ -49,6 +52,7 @@ class MenuItem {
       'category': category,
       'isSoldOut': isSoldOut,
       'isGrayscale': isGrayscale,
+      if (originalPrice != null) 'originalPrice': originalPrice,
     };
   }
 }

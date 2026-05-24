@@ -22,11 +22,14 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   final TextEditingController _notesController = TextEditingController();
+  final TextEditingController _promoController = TextEditingController();
   AddressModel? _selectedAddress;
+  double _discountAmount = 0.0;
 
   @override
   void dispose() {
     _notesController.dispose();
+    _promoController.dispose();
     super.dispose();
   }
 
@@ -147,7 +150,7 @@ class _CartScreenState extends State<CartScreen> {
                           ),
 
                           const SizedBox(height: 32),
-                          _buildWarningSection(),
+                          _buildPromoSection(),
                           const SizedBox(height: 48),
                           _buildSummarySection(cart),
                         ],
@@ -461,33 +464,72 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildWarningSection() {
+  void _applyPromo() {
+    if (_promoController.text.toUpperCase() == 'SEDIH') {
+      setState(() {
+        _discountAmount = 10000.0;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Promo berhasil dipakai! Diskon Rp 10.000')),
+      );
+    } else {
+      setState(() {
+        _discountAmount = 0.0;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kode Promo tidak valid!')),
+      );
+    }
+  }
+
+  Widget _buildPromoSection() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainer,
+        color: AppColors.secondaryContainer,
         border: Border.all(color: AppColors.primary, width: 4),
       ),
-      child: Column(
+      child: Row(
         children: [
-          const Icon(
-            Icons.warning_amber_rounded,
-            color: AppColors.error,
-            size: 48,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'YAKIN KUAT NAMBAH BEBAN?',
-            style: AppTypography.headlineMd.copyWith(fontSize: 20),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Lambungmu mungkin menyerah, tapi egomu tidak.',
-            style: AppTypography.bodyMd.copyWith(
-              color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
+          Expanded(
+            child: TextField(
+              controller: _promoController,
+              decoration: InputDecoration(
+                hintText: 'KODE PROMO SEDIH',
+                hintStyle: AppTypography.labelMono.copyWith(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                ),
+                border: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.primary, width: 2),
+                ),
+                enabledBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.primary, width: 2),
+                ),
+                focusedBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.primary, width: 2),
+                ),
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 8),
+              ),
+              style: AppTypography.labelMono,
             ),
-            textAlign: TextAlign.center,
+          ),
+          const SizedBox(width: 16),
+          InkWell(
+            onTap: _applyPromo,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              color: AppColors.primary,
+              child: Text(
+                'CEK',
+                style: AppTypography.labelMono.copyWith(
+                  color: AppColors.onPrimary,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -497,6 +539,7 @@ class _CartScreenState extends State<CartScreen> {
   Widget _buildSummarySection(CartProvider cart) {
     final formatCurrency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
     final total = cart.totalAmount;
+    final finalTotal = (total - _discountAmount).clamp(0, double.infinity);
 
     return Column(
       children: [
@@ -527,6 +570,14 @@ class _CartScreenState extends State<CartScreen> {
               ),
               const SizedBox(height: 24),
               _buildSummaryRow('HARGA DASAR', formatCurrency.format(total)),
+              if (_discountAmount > 0) ...[
+                const SizedBox(height: 16),
+                _buildSummaryRow(
+                  'POTONGAN SEDIH',
+                  '-${formatCurrency.format(_discountAmount)}',
+                  isError: true, // we use error color (red) to signify discount
+                ),
+              ],
               const SizedBox(height: 24),
               Container(height: 2, color: AppColors.primary),
               const SizedBox(height: 16),
@@ -538,8 +589,11 @@ class _CartScreenState extends State<CartScreen> {
                     style: AppTypography.headlineMd.copyWith(fontSize: 24),
                   ),
                   Text(
-                    formatCurrency.format(total),
-                    style: AppTypography.headlineMd.copyWith(fontSize: 24),
+                    formatCurrency.format(finalTotal),
+                    style: AppTypography.headlineMd.copyWith(
+                      fontSize: 24,
+                      color: _discountAmount > 0 ? AppColors.error : AppColors.primary,
+                    ),
                   ),
                 ],
               ),
@@ -555,63 +609,6 @@ class _CartScreenState extends State<CartScreen> {
                   style: AppTypography.labelMonoSmall.copyWith(
                     color: AppColors.primary.withValues(alpha: 0.5),
                     fontSize: 10,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.secondaryContainer,
-            border: Border.all(color: AppColors.primary, width: 4),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'KODE PROMO SEDIH',
-                    hintStyle: AppTypography.labelMono.copyWith(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                    ),
-                    border: const UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: AppColors.primary,
-                        width: 2,
-                      ),
-                    ),
-                    enabledBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: AppColors.primary,
-                        width: 2,
-                      ),
-                    ),
-                    focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: AppColors.primary,
-                        width: 2,
-                      ),
-                    ),
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                  ),
-                  style: AppTypography.labelMono,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                color: AppColors.primary,
-                child: Text(
-                  'CEK',
-                  style: AppTypography.labelMono.copyWith(
-                    color: AppColors.onPrimary,
                   ),
                 ),
               ),
@@ -655,7 +652,8 @@ class _CartScreenState extends State<CartScreen> {
       MaterialPageRoute(
         builder: (context) => PaymentScreen(
           cartItems: cart.items.values.toList(),
-          totalAmount: cart.totalAmount,
+          totalAmount: (cart.totalAmount - _discountAmount).clamp(0, double.infinity),
+          discountAmount: _discountAmount,
           orderNotes: _notesController.text.trim(),
           deliveryAddress: '${_selectedAddress!.title}\n${_selectedAddress!.address}',
         ),

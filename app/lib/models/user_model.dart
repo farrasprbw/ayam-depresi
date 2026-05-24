@@ -9,6 +9,8 @@ class UserModel {
   final String noKamar;
   final int poinMember;
   final int totalOrder;
+  final String depressionCause;
+  final String gender;
   final DateTime createdAt;
 
   UserModel({
@@ -20,6 +22,8 @@ class UserModel {
     required this.noKamar,
     required this.poinMember,
     required this.totalOrder,
+    required this.depressionCause,
+    required this.gender,
     required this.createdAt,
   });
 
@@ -33,8 +37,10 @@ class UserModel {
       noKamar: data['noKamar'] ?? '',
       poinMember: data['poinMember'] ?? 0,
       totalOrder: data['totalOrder'] ?? 0,
-      createdAt: data['createdAt'] != null 
-          ? (data['createdAt'] as Timestamp).toDate() 
+      depressionCause: data['depressionCause'] ?? 'Lainnya',
+      gender: data['gender'] ?? 'Laki-laki',
+      createdAt: data['createdAt'] != null
+          ? (data['createdAt'] as Timestamp).toDate()
           : DateTime.now(),
     );
   }
@@ -49,6 +55,8 @@ class UserModel {
       'noKamar': noKamar,
       'poinMember': poinMember,
       'totalOrder': totalOrder,
+      'depressionCause': depressionCause,
+      'gender': gender,
       'createdAt': createdAt,
     };
   }

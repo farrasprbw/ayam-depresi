@@ -1,10 +1,11 @@
+import 'package:provider/provider.dart';
+import '../providers/cart_provider.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
 import '../widgets/brutal_button.dart';
-import '../widgets/brutal_cached_image.dart';
 import 'cart_screen.dart';
 import 'address_screen.dart';
 import 'login_screen.dart';
@@ -25,10 +26,16 @@ class ProfileScreenContent extends StatelessWidget {
             stream: UserService().getUserProfileStream(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                );
               }
-              if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
-                return const Center(child: Text('Gagal memuat profil penderitaan.'));
+              if (snapshot.hasError ||
+                  !snapshot.hasData ||
+                  snapshot.data == null) {
+                return const Center(
+                  child: Text('Gagal memuat profil penderitaan.'),
+                );
               }
 
               final user = snapshot.data!;
@@ -53,7 +60,7 @@ class ProfileScreenContent extends StatelessWidget {
                   const SizedBox(height: 48),
                 ],
               );
-            }
+            },
           ),
         ),
       ],
@@ -112,22 +119,30 @@ class ProfileScreenContent extends StatelessWidget {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: AppColors.error,
-                        border: Border.all(color: AppColors.primary, width: 2),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '3',
-                          style: AppTypography.labelMonoSmall.copyWith(
-                            color: AppColors.onError,
-                            fontSize: 8,
+                    child: Consumer<CartProvider>(
+                      builder: (context, cart, child) {
+                        if (cart.itemCount == 0) return const SizedBox.shrink();
+                        return Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: AppColors.error,
+                            border: Border.all(
+                              color: AppColors.primary,
+                              width: 2,
+                            ),
                           ),
-                        ),
-                      ),
+                          child: Center(
+                            child: Text(
+                              '${cart.itemCount}',
+                              style: AppTypography.labelMonoSmall.copyWith(
+                                color: AppColors.onError,
+                                fontSize: 8,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -170,12 +185,14 @@ class ProfileScreenContent extends StatelessWidget {
                   border: Border.all(color: AppColors.primary, width: 4),
                   boxShadow: AppThemeConstants.brutalShadow,
                 ),
-                child: const BrutalCachedImage(
-                  imageUrl:
-                      'https://lh3.googleusercontent.com/aida-public/AB6AXuBDm1ULIje33cKzBi286st8kOH1rZpvipS1-liievrX_rANmpUORcJxTUixXuRQ4ZHlu8-efPnkbFM9SocdmK8y1f_9cj52JVtqB_RkleshGatkRcmn2GAIWCF8sKimzMljx-A3CN8Y-mUNdkqu0HikyqNH0QIq5xjbKuETW8RuGWerM2KrECMaC9U1LWd2_Q_WmW3Sbn-rE3xNQJapu92YcSru4bQzFlw-o8h83C0tI0nFEw-9MZSag3jdiuWZaPp6pUuI7qMWFTs',
+                child: Image.asset(
+                  user.gender == 'Perempuan'
+                      ? 'assets/images/woman_character.webp'
+                      : 'assets/images/man_character.webp',
                   fit: BoxFit.cover,
-                  memCacheWidth: 400,
-                  grayscale: true,
+                  cacheWidth: 400,
+                  color: Colors.grey,
+                  colorBlendMode: BlendMode.saturation,
                 ),
               ),
               Positioned(
@@ -392,7 +409,7 @@ class ProfileScreenContent extends StatelessWidget {
   Widget _buildLogoutButton(BuildContext context) {
     return BrutalButton(
       text: 'LOG OUT (MENYERAH)',
-      isPrimary: false,
+      isPrimary: true,
       onPressed: () {
         Navigator.pushAndRemoveUntil(
           context,

@@ -25,6 +25,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _termsAccepted = false;
   bool _isLoading = false;
 
+  final List<String> _genders = ['Laki-laki', 'Perempuan'];
+  String _selectedGender = 'Laki-laki';
+
   final _authService = AuthService();
 
   @override
@@ -40,7 +43,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _handleRegister() async {
     if (!_termsAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Anda harus menyetujui syarat & ketentuan.')),
+        const SnackBar(
+          content: Text('Anda harus menyetujui syarat & ketentuan.'),
+        ),
       );
       return;
     }
@@ -53,14 +58,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (username.isEmpty || name.isEmpty || phone.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Semua kolom wajib diisi (beban hidup sudah berat).')),
+        const SnackBar(
+          content: Text('Semua kolom wajib diisi (beban hidup sudah berat).'),
+        ),
       );
       return;
     }
 
     if (password != confirm) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Rahasia kelam tidak cocok dengan konfirmasi.')),
+        const SnackBar(
+          content: Text('Rahasia kelam tidak cocok dengan konfirmasi.'),
+        ),
       );
       return;
     }
@@ -73,11 +82,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
         name: name,
         phone: phone,
         password: password,
+        depressionCause: 'Beban Hidup',
+        gender: _selectedGender,
       );
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pendaftaran sukses! Silakan login untuk mulai menderita.')),
+        const SnackBar(
+          content: Text(
+            'Pendaftaran sukses! Silakan login untuk mulai menderita.',
+          ),
+        ),
       );
       Navigator.pop(context); // Kembali ke LoginScreen
     } catch (e) {
@@ -255,7 +270,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               const SizedBox(height: 24),
                               _buildUnderlineTextField(
                                 label: 'NAMA LENGKAP (SIAPA KAMU?)',
-                                hint: 'Nama yang dipanggil saat pesanan tiba...',
+                                hint:
+                                    'Nama yang dipanggil saat pesanan tiba...',
                                 controller: _nameController,
                               ),
                               const SizedBox(height: 24),
@@ -289,6 +305,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         !_isConfirmPasswordVisible;
                                   });
                                 },
+                              ),
+                              const SizedBox(height: 32),
+
+                              // Gender Selection
+                              SizedBox(
+                                width: double.infinity,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'GENDER',
+                                      style: AppTypography.labelMono.copyWith(color: AppColors.primary),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: _genders.map((gender) {
+                                        final isSelected = _selectedGender == gender;
+                                        return GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _selectedGender = gender;
+                                            });
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                            decoration: BoxDecoration(
+                                              color: isSelected ? AppColors.primary : Colors.transparent,
+                                              border: Border.all(color: AppColors.primary, width: 2),
+                                            ),
+                                            child: Text(
+                                              gender,
+                                              style: AppTypography.labelMonoSmall.copyWith(
+                                                color: isSelected ? AppColors.onPrimary : AppColors.primary,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ],
+                                ),
                               ),
                               const SizedBox(height: 32),
 
@@ -327,13 +386,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               const SizedBox(height: 40),
 
                               // Submit Button
-                              _isLoading 
-                                ? const CircularProgressIndicator(color: AppColors.primary)
-                                : BrutalButton(
-                                    text: 'MENDAFTAR & MENDERITA',
-                                    isPrimary: true,
-                                    onPressed: _handleRegister,
-                                  ),
+                              _isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: AppColors.primary,
+                                    )
+                                  : BrutalButton(
+                                      text: 'MENDAFTAR & MENDERITA',
+                                      isPrimary: true,
+                                      onPressed: _handleRegister,
+                                    ),
 
                               const SizedBox(height: 40),
 

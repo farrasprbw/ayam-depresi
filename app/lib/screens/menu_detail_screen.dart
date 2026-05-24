@@ -7,6 +7,8 @@ import '../widgets/brutal_button.dart';
 import '../widgets/brutal_cached_image.dart';
 import '../widgets/brutal_text_field.dart';
 import 'cart_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/cart_provider.dart';
 
 class MenuDetailScreen extends StatefulWidget {
   const MenuDetailScreen({super.key});
@@ -128,28 +130,29 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                     ),
                   ),
                   Positioned(
-                    top: 4,
-                    right: 4,
-                    child: Container(
-                      width: 14,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        color: AppColors.error,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.primary,
-                          width: 1,
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '3',
-                          style: AppTypography.labelMonoSmall.copyWith(
-                            color: AppColors.onPrimary,
-                            fontSize: 8,
+                    top: 8,
+                    right: 8,
+                    child: Consumer<CartProvider>(
+                      builder: (context, cart, child) {
+                        if (cart.itemCount == 0) return const SizedBox.shrink();
+                        return Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: AppColors.error,
+                            border: Border.all(color: AppColors.primary, width: 2),
                           ),
-                        ),
-                      ),
+                          child: Center(
+                            child: Text(
+                              '${cart.itemCount}',
+                              style: AppTypography.labelMonoSmall.copyWith(
+                                color: AppColors.onError,
+                                fontSize: 8,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],

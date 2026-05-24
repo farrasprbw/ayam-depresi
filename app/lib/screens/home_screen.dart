@@ -63,7 +63,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
       ),
-      floatingActionButton: _selectedIndex == 0 ? _buildFab() : null,
       bottomNavigationBar: _buildBottomNav(),
     );
   }
@@ -160,63 +159,80 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFlashSale() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.error,
-        border: AppThemeConstants.brutalBorder,
-        boxShadow: AppThemeConstants.brutalShadow,
-      ),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // Background Icon
-          Positioned(
-            right: -40,
-            top: -40,
-            child: Transform.rotate(
-              angle: 12 * pi / 180,
-              child: const Icon(Icons.timer, size: 150, color: Colors.white24),
-            ),
+    return StreamBuilder<List<MenuItem>>(
+      stream: MenuService().getMenus(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
+        
+        // Find if any item has an originalPrice set (indicating a flash sale)
+        final flashSaleItems = snapshot.data!.where((item) => item.originalPrice != null && item.originalPrice! > item.price).toList();
+        
+        if (flashSaleItems.isEmpty) return const SizedBox.shrink();
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.error,
+            border: AppThemeConstants.brutalBorder,
+            boxShadow: AppThemeConstants.brutalShadow,
           ),
-          // Content
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
+            clipBehavior: Clip.none,
             children: [
-              Transform.rotate(
-                angle: -2 * pi / 180,
-                child: Container(
-                  color: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  child: Text(
-                    'FLASH SALE!',
-                    style: AppTypography.headlineMd.copyWith(
-                      color: AppColors.onPrimary,
-                      fontSize: 24,
+              // Background Icon
+              Positioned(
+                right: -40,
+                top: -40,
+                child: Transform.rotate(
+                  angle: 12 * pi / 180,
+                  child: const Icon(Icons.timer, size: 150, color: Colors.white24),
+                ),
+              ),
+              // Content
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Transform.rotate(
+                    angle: -2 * pi / 180,
+                    child: Container(
+                      color: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      child: Text(
+                        'FLASH SALE!',
+                        style: AppTypography.headlineMd.copyWith(
+                          color: AppColors.onPrimary,
+                          fontSize: 24,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'DISKON 50% JAM 19:00 - 21:00',
-                style: AppTypography.labelMono.copyWith(
-                  color: AppColors.onPrimary,
-                ),
-              ),
-              const SizedBox(height: 16),
-              BrutalButton(
-                text: 'SIKAT MIRING',
-                isPrimary: false,
-                onPressed: () {},
+                  const SizedBox(height: 8),
+                  Text(
+                    'POTONGAN HARGA SEDANG BERLANGSUNG',
+                    style: AppTypography.labelMono.copyWith(
+                      color: AppColors.onPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  BrutalButton(
+                    text: 'SIKAT MIRING',
+                    isPrimary: false,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const MenuDetailScreen()),
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        );
+      }
     );
   }
 
@@ -711,36 +727,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFab() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: GestureDetector(
-        onTap: () {},
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.error,
-            border: AppThemeConstants.brutalBorder,
-            boxShadow: AppThemeConstants.brutalShadow,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'PESAN CEPAT',
-                style: AppTypography.headlineMd.copyWith(
-                  color: AppColors.onPrimary,
-                  fontSize: 20,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(Icons.bolt, color: AppColors.onPrimary, size: 28),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildBottomNav() {
     return Container(

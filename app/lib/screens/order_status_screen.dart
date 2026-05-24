@@ -46,9 +46,11 @@ class _OrderStatusViewState extends State<OrderStatusView>
       stream: OrderService().getOrderStream(widget.orderId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          );
         }
-        
+
         final order = snapshot.data;
         if (order == null) {
           return const Center(child: Text('PESANAN TIDAK DITEMUKAN'));
@@ -80,7 +82,7 @@ class _OrderStatusViewState extends State<OrderStatusView>
             _buildBottomBar(),
           ],
         );
-      }
+      },
     );
   }
 
@@ -173,43 +175,52 @@ class _OrderStatusViewState extends State<OrderStatusView>
             ),
           ),
           const SizedBox(height: 32),
+
           // Timeline steps
-          
-          if (isPending) 
-            _buildActiveTimelineStep('PENDING', 'Pesanan masuk, bersiaplah.')
+          if (isPending)
+            _buildActiveTimelineStep(
+              'DAPUR TERIMA',
+              'Pesanan masuk, bersiaplah.',
+            )
           else
             _buildTimelineStep(
               icon: Icons.receipt_long,
-              title: 'PENDING',
+              title: 'DAPUR TERIMA',
               description: 'Pesanan masuk.',
               isCompleted: true,
             ),
-            
+
           if (isPreparing)
-            _buildActiveTimelineStep('PREPARING', 'Ayam lagi nangis di pojokan, digeprek.')
+            _buildActiveTimelineStep(
+              'DI GEPREK',
+              'Ayam lagi nangis di pojokan, digeprek.',
+            )
           else
             _buildTimelineStep(
               icon: Icons.hardware, // Hammer for Digeprek
-              title: 'PREPARING',
+              title: 'DI GEPREK',
               description: 'Dipukul kerasnya kenyataan.',
               isCompleted: status == 'DELIVERING' || status == 'COMPLETED',
               isUpcoming: isPending,
             ),
-            
+
           if (isDelivering)
-            _buildActiveTimelineStep('DELIVERING', 'Kurir lagi jalan bawa kesedihanmu.')
+            _buildActiveTimelineStep(
+              'DIANTAR',
+              'Kurir lagi jalan bawa kesedihanmu.',
+            )
           else
             _buildTimelineStep(
               icon: Icons.directions_bike,
-              title: 'DELIVERING',
-              description: 'Diantar.',
+              title: 'DIANTAR',
+              description: 'Kurir lagi jalan bawa kesedihanmu..',
               isCompleted: status == 'COMPLETED',
               isUpcoming: isPending || isPreparing,
             ),
-            
+
           _buildTimelineStep(
             icon: Icons.meeting_room,
-            title: 'COMPLETED',
+            title: 'SAMPAI TUJUAN',
             description: 'Sampai Tujuan. Siap-siap nangis bareng.',
             isUpcoming: status != 'COMPLETED',
             isCompleted: status == 'COMPLETED',

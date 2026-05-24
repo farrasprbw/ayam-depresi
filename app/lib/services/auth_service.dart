@@ -33,8 +33,10 @@ class AuthService {
       );
       return userCredential;
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found' || e.code == 'wrong-password' || e.code == 'invalid-credential') {
-         throw Exception('Username atau password salah.');
+      if (e.code == 'user-not-found' ||
+          e.code == 'wrong-password' ||
+          e.code == 'invalid-credential') {
+        throw Exception('Username atau password salah.');
       }
       throw Exception(e.message ?? 'Terjadi kesalahan saat login.');
     } catch (e) {
@@ -48,10 +50,12 @@ class AuthService {
     required String name,
     required String phone,
     required String password,
+    required String depressionCause,
+    required String gender,
   }) async {
     try {
       final email = _toDummyEmail(username);
-      
+
       // 1. Buat user di Firebase Auth
       final userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -70,6 +74,8 @@ class AuthService {
           'noKamar': '', // default dummy
           'poinMember': 0,
           'totalOrder': 0,
+          'depressionCause': depressionCause,
+          'gender': gender,
           'createdAt': FieldValue.serverTimestamp(),
         });
       }

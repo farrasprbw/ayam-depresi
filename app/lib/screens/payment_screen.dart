@@ -18,6 +18,7 @@ class PaymentScreen extends StatefulWidget {
   final num? totalAmount;
   final String? orderNotes;
   final String? deliveryAddress;
+  final num? discountAmount;
   final bool isManagementMode;
 
   const PaymentScreen({
@@ -26,6 +27,7 @@ class PaymentScreen extends StatefulWidget {
     this.totalAmount,
     this.orderNotes,
     this.deliveryAddress,
+    this.discountAmount,
     this.isManagementMode = false,
   });
 
@@ -190,22 +192,27 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: AppColors.error,
-                        border: Border.all(color: AppColors.primary, width: 2),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '3',
-                          style: AppTypography.labelMonoSmall.copyWith(
-                            color: AppColors.onError,
-                            fontSize: 8,
+                    child: Consumer<CartProvider>(
+                      builder: (context, cart, child) {
+                        if (cart.itemCount == 0) return const SizedBox.shrink();
+                        return Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: AppColors.error,
+                            border: Border.all(color: AppColors.primary, width: 2),
                           ),
-                        ),
-                      ),
+                          child: Center(
+                            child: Text(
+                              '${cart.itemCount}',
+                              style: AppTypography.labelMonoSmall.copyWith(
+                                color: AppColors.onError,
+                                fontSize: 8,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -393,6 +400,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   child: _buildSummaryRow('${item.quantity}x ${item.menuItem.title}', formatCurrency.format(item.totalPrice)),
                 );
               }),
+              if (widget.discountAmount != null && widget.discountAmount! > 0) ...[
+                const SizedBox(height: 8),
+                _buildSummaryRow(
+                  'POTONGAN SEDIH',
+                  '-${formatCurrency.format(widget.discountAmount)}',
+                  isError: true,
+                ),
+              ],
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.only(top: 16),

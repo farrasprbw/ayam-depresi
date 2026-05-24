@@ -1,3 +1,5 @@
+import 'package:provider/provider.dart';
+import '../providers/cart_provider.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
@@ -137,22 +139,27 @@ class _AddressScreenState extends State<AddressScreen> {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: AppColors.error,
-                        border: Border.all(color: AppColors.primary, width: 2),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '3',
-                          style: AppTypography.labelMonoSmall.copyWith(
-                            color: AppColors.onError,
-                            fontSize: 8,
+                    child: Consumer<CartProvider>(
+                      builder: (context, cart, child) {
+                        if (cart.itemCount == 0) return const SizedBox.shrink();
+                        return Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: AppColors.error,
+                            border: Border.all(color: AppColors.primary, width: 2),
                           ),
-                        ),
-                      ),
+                          child: Center(
+                            child: Text(
+                              '${cart.itemCount}',
+                              style: AppTypography.labelMonoSmall.copyWith(
+                                color: AppColors.onError,
+                                fontSize: 8,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],

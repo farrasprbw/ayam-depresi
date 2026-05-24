@@ -55,10 +55,9 @@ class OrderService {
     return _db
         .collection(collectionPath)
         .where('userId', isEqualTo: user.uid)
-        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
+      final orders = snapshot.docs.map((doc) {
         final data = doc.data();
         return OrderModel(
           id: doc.id,
@@ -71,6 +70,9 @@ class OrderService {
           createdAt: (data['createdAt'] as Timestamp).toDate(),
         );
       }).toList();
+      
+      orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return orders;
     });
   }
 
